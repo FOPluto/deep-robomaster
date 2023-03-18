@@ -1,7 +1,8 @@
 [
 {
   "directory": "/home/fo_pluto/demo_opencv/build",
-  "command": "/usr/bin/g++   -I/home/fo_pluto/demo_opencv -isystem /usr/local/include/opencv -isystem /home/fo_pluto/demo_opencv/build/_deps/pybind11-src/include -isystem /usr/include/python3.8   -O0 -Wall -g2 -ggdb   -std=c++14 -std=gnu++14 -o CMakeFiles/demo_opencv.dir/demo.cpp.o -c /home/fo_pluto/demo_opencv/demo.cpp",
-  "file": "/home/fo_pluto/demo_opencv/demo.cpp"
+  "command": "/usr/bin/g++  -I/home/fo_pluto/demo_opencv -isystem /usr/local/include/opencv -isystem /home/fo_pluto/demo_opencv/build/_deps/pybind11-src/include -isystem /usr/include/python3.8  -O0 -Wall -g2 -ggdb -std=gnu++14   -std=c++14 -o CMakeFiles/demo_opencv.dir/demo.cpp.o -c /home/fo_pluto/demo_opencv/demo.cpp",
+  "file": "/home/fo_pluto/demo_opencv/demo.cpp",
+  "output": "CMakeFiles/demo_opencv.dir/demo.cpp.o"
 }
 ]
