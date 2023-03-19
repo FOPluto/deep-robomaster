@@ -3,9 +3,9 @@
 # No other meaning or use of this file is supported.
 
 method=git
-command=/root/anaconda3/lib/python3.9/site-packages/cmake/data/bin/cmake;-P;/home/fo_pluto/demo_opencv/build/_deps/pybind11-subbuild/pybind11-populate-prefix/tmp/pybind11-populate-gitclone.cmake
-source_dir=/home/fo_pluto/demo_opencv/build/_deps/pybind11-src
-work_dir=/home/fo_pluto/demo_opencv/build/_deps
+command=/usr/local/bin/cmake;-P;/home/robomaster/opencv_home/deep-robomaster/build/_deps/pybind11-subbuild/pybind11-populate-prefix/tmp/pybind11-populate-gitclone.cmake
+source_dir=/home/robomaster/opencv_home/deep-robomaster/build/_deps/pybind11-src
+work_dir=/home/robomaster/opencv_home/deep-robomaster/build/_deps
 repository=https://github.com/pybind/pybind11.git
 remote=origin
 init_submodules=TRUE

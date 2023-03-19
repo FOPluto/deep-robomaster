@@ -1,4 +1,4 @@
-# Install script for directory: /home/fo_pluto/demo_opencv/build/_deps/pybind11-src
+# Install script for directory: /home/robomaster/opencv_home/deep-robomaster/build/_deps/pybind11-src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

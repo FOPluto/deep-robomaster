@@ -1,4 +1,4 @@
-# Install script for directory: /home/fo_pluto/demo_opencv
+# Install script for directory: /home/robomaster/opencv_home/deep-robomaster
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -44,7 +44,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/fo_pluto/demo_opencv/build/_deps/pybind11-build/cmake_install.cmake")
+  include("/home/robomaster/opencv_home/deep-robomaster/build/_deps/pybind11-build/cmake_install.cmake")
 
 endif()
 
@@ -56,5 +56,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/fo_pluto/demo_opencv/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/robomaster/opencv_home/deep-robomaster/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

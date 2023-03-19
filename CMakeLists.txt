@@ -23,7 +23,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(pybind11)
 
 add_executable(demo_opencv demo.cpp)
-include_directories(/home/fo_pluto/demo_opencv)
+include_directories(/home/robomaster/opencv_home/deep-robomaster)
 
 target_link_libraries(demo_opencv PRIVATE ${OpenCV_LIBS} pybind11::embed)
 
