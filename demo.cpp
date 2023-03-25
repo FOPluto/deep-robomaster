@@ -34,8 +34,10 @@ int main() {
         auto output_tensor = module.forward({input_tensor});
         // 并将结果转换成为tensor格式
         std::cout << output_tensor << std::endl;
-        auto output = module.forward({input_tensor}).toTensorList();
+        auto output = output_tensor.toTensorList();
         std::vector<at::Tensor> output_tensors(output.begin(), output.end());
+        std::cout << "num_of_output_level: " << output_tensors.size() << std::endl;
+        cvWaitKey(1);
     }
 
     return 0;
