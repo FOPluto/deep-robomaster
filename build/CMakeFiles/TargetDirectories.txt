@@ -1,3 +1,0 @@
-/home/fo_pluto/demo_opencv/build/CMakeFiles/demo_opencv.dir
-/home/fo_pluto/demo_opencv/build/CMakeFiles/edit_cache.dir
-/home/fo_pluto/demo_opencv/build/CMakeFiles/rebuild_cache.dir

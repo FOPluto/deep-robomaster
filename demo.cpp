@@ -55,6 +55,7 @@ int main() {
     // 加载图片
     cv::Mat image = cv::imread("test.jpg");
 
+    
     // 将图片转换为 Tensor，并且调整大小为 640x640
     torch::Tensor input_tensor = torch::from_blob(image.data, {1, image.rows, image.cols, image.channels()}, torch::kByte);
     input_tensor = input_tensor.permute({0, 3, 1, 2}); 
