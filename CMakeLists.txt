@@ -23,9 +23,6 @@ find_package(Torch REQUIRED
 
 include_directories(/home/fo_pluto/demo_opencv ${TORCH_DIR}/include)
 
-add_executable(${PROJECT_NAME} demo.cpp)
-include_directories(/home/fo_pluto/demo_opencv)
-
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS} ${TORCH_LIBRARIES})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)

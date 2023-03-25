@@ -7,6 +7,12 @@
 class Yolov5{
 	private:
 
+	cv::Mat src_image;
+
+	cv::Mat src_copy_image;
+
+	cv::
+
 	public:
-	
+
 };
