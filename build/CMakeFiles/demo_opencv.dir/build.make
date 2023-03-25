@@ -76,15 +76,15 @@ CMakeFiles/demo_opencv.dir/demo.cpp.o: CMakeFiles/demo_opencv.dir/flags.make
 CMakeFiles/demo_opencv.dir/demo.cpp.o: /home/fo_pluto/demo_opencv/demo.cpp
 CMakeFiles/demo_opencv.dir/demo.cpp.o: CMakeFiles/demo_opencv.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/fo_pluto/demo_opencv/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/demo_opencv.dir/demo.cpp.o"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/demo_opencv.dir/demo.cpp.o -MF CMakeFiles/demo_opencv.dir/demo.cpp.o.d -o CMakeFiles/demo_opencv.dir/demo.cpp.o -c /home/fo_pluto/demo_opencv/demo.cpp
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/demo_opencv.dir/demo.cpp.o -MF CMakeFiles/demo_opencv.dir/demo.cpp.o.d -o CMakeFiles/demo_opencv.dir/demo.cpp.o -c /home/fo_pluto/demo_opencv/demo.cpp
 
 CMakeFiles/demo_opencv.dir/demo.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/demo_opencv.dir/demo.cpp.i"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fo_pluto/demo_opencv/demo.cpp > CMakeFiles/demo_opencv.dir/demo.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fo_pluto/demo_opencv/demo.cpp > CMakeFiles/demo_opencv.dir/demo.cpp.i
 
 CMakeFiles/demo_opencv.dir/demo.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/demo_opencv.dir/demo.cpp.s"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fo_pluto/demo_opencv/demo.cpp -o CMakeFiles/demo_opencv.dir/demo.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fo_pluto/demo_opencv/demo.cpp -o CMakeFiles/demo_opencv.dir/demo.cpp.s
 
 # Object files for target demo_opencv
 demo_opencv_OBJECTS = \
@@ -121,6 +121,9 @@ demo_opencv: /usr/local/lib/libopencv_surface_matching.so.3.4.9
 demo_opencv: /usr/local/lib/libopencv_tracking.so.3.4.9
 demo_opencv: /usr/local/lib/libopencv_ximgproc.so.3.4.9
 demo_opencv: /usr/local/lib/libopencv_xphoto.so.3.4.9
+demo_opencv: /home/fo_pluto/libtorch/lib/libtorch.so
+demo_opencv: /home/fo_pluto/libtorch/lib/libc10.so
+demo_opencv: /home/fo_pluto/libtorch/lib/libkineto.a
 demo_opencv: /usr/local/lib/libopencv_highgui.so.3.4.9
 demo_opencv: /usr/local/lib/libopencv_objdetect.so.3.4.9
 demo_opencv: /usr/local/lib/libopencv_videoio.so.3.4.9
@@ -139,7 +142,7 @@ demo_opencv: /usr/local/lib/libopencv_ml.so.3.4.9
 demo_opencv: /usr/local/lib/libopencv_photo.so.3.4.9
 demo_opencv: /usr/local/lib/libopencv_imgproc.so.3.4.9
 demo_opencv: /usr/local/lib/libopencv_core.so.3.4.9
-demo_opencv: /usr/lib/x86_64-linux-gnu/libpython3.8.so
+demo_opencv: /home/fo_pluto/libtorch/lib/libc10.so
 demo_opencv: CMakeFiles/demo_opencv.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/fo_pluto/demo_opencv/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable demo_opencv"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/demo_opencv.dir/link.txt --verbose=$(VERBOSE)

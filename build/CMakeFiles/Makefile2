@@ -67,32 +67,15 @@ CMAKE_BINARY_DIR = /home/fo_pluto/demo_opencv/build
 
 # The main recursive "all" target.
 all: CMakeFiles/demo_opencv.dir/all
-all: _deps/pybind11-build/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
-preinstall: _deps/pybind11-build/preinstall
+preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
 clean: CMakeFiles/demo_opencv.dir/clean
-clean: _deps/pybind11-build/clean
 .PHONY : clean
-
-#=============================================================================
-# Directory level rules for directory _deps/pybind11-build
-
-# Recursive "all" directory target.
-_deps/pybind11-build/all:
-.PHONY : _deps/pybind11-build/all
-
-# Recursive "preinstall" directory target.
-_deps/pybind11-build/preinstall:
-.PHONY : _deps/pybind11-build/preinstall
-
-# Recursive "clean" directory target.
-_deps/pybind11-build/clean:
-.PHONY : _deps/pybind11-build/clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/demo_opencv.dir
