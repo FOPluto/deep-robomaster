@@ -55,19 +55,30 @@ int main() {
     // 加载图片
     cv::Mat image = cv::imread("test.jpg");
 
-    
-    // 将图片转换为 Tensor，并且调整大小为 640x640
-    torch::Tensor input_tensor = torch::from_blob(image.data, {1, image.rows, image.cols, image.channels()}, torch::kByte);
-    input_tensor = input_tensor.permute({0, 3, 1, 2}); 
-    input_tensor = torch::upsample_nearest2d(input_tensor, {640, 640});
-    input_tensor = input_tensor.to(torch::kFloat);
-    input_tensor = input_tensor.div(255);
+    cv::VideoCapture videoCapture("6000-2.mp4");
 
-    // 使用模型进行推理
-    at::Tensor output_tensor = module.forward({input_tensor}).toTensor();
+    if(!videoCapture.isOpened()){
+        cout << "video is not opened" << endl;
+        return -1;
+    }
 
-    // 处理输出结果
-    // ...
+    cv::Mat frame;
+
+    while(videoCapture.read(frame)){
+        cv::Mat src_image;
+        frame.copyTo(src_image);
+
+        cv::imshow("src_image", frame);
+
+        // 转换为输入的Tensor类型的数据,并且调整顺序
+        torch::Tensor input_tensor = torch::from_blob(src_image.data, {1, src_image.rows, src_image.cols, src_image.channels()}, torch::kByte);
+        input_tensor = input_tensor.permute({0, 3, 1, 2});
+        input_tensor = input_tensor.to(torch::kFloat);
+        input_tensor = input_tensor.div(255);
+        // 使用模型进行推理
+        at::Tensor output_tensor = module.forward({input_tensor}).toTensor();
+
+    }
 
     return 0;
 }
