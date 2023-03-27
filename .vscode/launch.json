@@ -26,7 +26,7 @@
                 }
             ],
             "preLaunchTask": "make", //*****重要一步*****在调试前会先调用make这个task中编译构建的程序
-            "miDebuggerPath": "/bin/gdb"
+            "miDebuggerPath": "/usr/bin/gdb"
         }
     ]
 }
