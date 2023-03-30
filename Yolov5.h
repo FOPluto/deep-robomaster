@@ -1,4 +1,3 @@
-#include <torch/script>
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
 #include <iostream>
@@ -11,7 +10,9 @@ class Yolov5{
 
 	cv::Mat src_copy_image;
 
-	cv::
+	double input_height;
+
+	double input_weight;
 
 	public:
 

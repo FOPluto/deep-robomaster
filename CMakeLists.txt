@@ -8,21 +8,19 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
 
 add_definitions(-std=c++14)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+include_directories(
+    #OpenVINO推理引擎的头文件
+    /opt/intel/openvino/runtime/include
+    /home/robomaster/demo_opencv
+)
 
-set(TORCH_DIR /home/robomaster/libtorch)
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 find_package(OpenCV REQUIRED)
 
-find_package(Torch REQUIRED
-            NO_MODULE
-            PATHS /home/robomaster/libtorch
-            NO_DEFAULT_PATH)
-
 add_executable(${PROJECT_NAME} hello_onnx.cpp)
 
-include_directories(/home/robomaster/demo_opencv ${TORCH_DIR}/include)
-
-target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS} ${TORCH_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
