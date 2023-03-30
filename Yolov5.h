@@ -14,6 +14,8 @@ class Yolov5{
 
 	double input_weight;
 
+	
+
 	public:
 
 };
