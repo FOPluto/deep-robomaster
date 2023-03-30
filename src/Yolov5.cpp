@@ -19,7 +19,10 @@ void Yolov5::Init(){
         30,61, 62,45, 59,119,
         116,90, 156,198, 373,326
     };
+    this->yolov5_model_init();
 }
+
+void Yolov5::yolov5_model_init(std::string xml_path)
 
 void Yolov5::detect(cv::Mat frame){
     this->src_image = frame;

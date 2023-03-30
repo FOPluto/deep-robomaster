@@ -25,7 +25,7 @@ class Yolov5{
 	Yolov5();
 
 	void Init();                                    // 初始化函数
-	void detect_amch(cv::Mat src_);                 // 识别函数，用来识别装甲板
+	void yolov5_detect(cv::Mat src_);                 // 识别函数，用来识别装甲板
 
 	// 内部接口
 	private:
@@ -33,5 +33,6 @@ class Yolov5{
 	void inferAndOutput(cv::Mat &src_, InferenceEngine::InferRequest &infer_request, 
 		InferenceEngine::InputsDataMap & input_info, InferenceEngine::OutputsDataMap &output_info, float sx, float sy);
 	
+	void yolov5_model_init(std::string xml_path, std::string bin_path);
 	
 };
