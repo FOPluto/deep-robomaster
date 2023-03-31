@@ -4,17 +4,21 @@
 
 #include "Yolov5.h"
 
+#define DEBUG
+
+#define WINDOW_NAME "res_show"
+
 Yolov5::Yolov5(){
     this->m_xml_path = "./best.xml";
     this->m_bin_path = "./best.bin";
 }
 
 // create function to define some element, change the xml some time
-Yolov5::Yolov5(std::string xml_path, std::string bin_path = 640, int input_weight, int input_height = 640){
+Yolov5::Yolov5(std::string xml_path, std::string bin_path, int input_width, int input_height){
     this->m_xml_path = xml_path;
     this->m_bin_path = bin_path;
     this->m_input_height = input_height;
-    this->m_input_weight = input_weight;
+    this->m_input_width = input_width;
 }
 
 void Yolov5::init_yolov5_detector(){
@@ -54,10 +58,72 @@ void Yolov5::read_network(){
 }
 
 
+
+
+
+
 bool Yolov5::is_allready()
 {
 	if(m_input_info.size()>0 && m_output_info.size()>0)
-		return  true;
+		return true;
 	else
-		return  false;
+		return false;
+}
+
+
+
+
+
+void Yolov5::input2res(cv::Mat& src_){
+	auto infer_request = m_executable_network.CreateInferRequest();
+	float scale_x = (float)src_.cols / m_input_width;
+	float scale_y = (float)src_.rows / m_input_height;
+
+    if(scale_x > 1 || scale_y > 1){
+        float max_scale = std::max(scale_x, scale_y);
+        int res_width = src_.cols / max_scale;
+        int res_height = src_.rows / max_scale;
+        cv::resize(src_, src_, cv::Size(res_width, res_height));
+    }
+    
+	scale_x = (float)src_.cols / m_input_width;
+	scale_y = (float)src_.rows / m_input_height;
+
+    if(scale_x < 1 && scale_y < 1){
+        if(scale_x > scale_y){
+            float max_scale = scale_x;
+            cv::resize(src_, src_, cv::Size(src_.cols / max_scale, src_.rows / max_scale));
+        } else {
+            float max_scale = scale_y;
+            cv::resize(src_, src_, cv::Size(src_.cols / max_scale, src_.rows / max_scale));
+        }
+    }
+
+    if(scale_x < 1){
+        cv::copyMakeBorder(src_, src_, 0, 0, 0, this->m_input_width - src_.cols, BORDER_CONSTANT, cv::Scalar(0, 0, 0));
+    } else if(scale_y < 1){
+        cv::copyMakeBorder(src_, src_, 0, this->m_input_height - src_.rows, 0, 0, BORDER_CONSTANT, cv::Scalar(0, 0, 0));
+    }
+
+    #ifdef DEBUG
+    cv::imshow("src_size", src_);
+    cv::waitKey(0);
+    #endif
+
+    
+
+}
+
+
+
+void Yolov5::detect_yolov5(cv::Mat src_){
+    this->m_src_image = src_;
+    this->m_src_image.copyTo(m_src_copy_image);
+	auto infer_request = m_executable_network.CreateInferRequest();
+    this->input2res(m_src_image);
+}
+
+
+void Yolov5::show_res(){
+    imshow(WINDOW_NAME, this->m_src_copy_image);
 }

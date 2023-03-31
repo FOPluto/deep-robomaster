@@ -9,6 +9,7 @@
 #include <opencv2/dnn.hpp>
 #include <inference_engine.hpp>
 
+// #define DEBUG
 
 using namespace std;
 using namespace cv;
@@ -19,29 +20,33 @@ using namespace InferenceEngine;
 class Yolov5{
 	private:
 
+	float* data;
 	cv::Mat m_src_image;
 	cv::Mat m_src_copy_image;
+	cv::Mat blob_image;
 	int m_input_height;
-	int m_input_weight;
+	int m_input_width;
 	std::string m_xml_path;                                      // xml path
 	std::string m_bin_path;                                      // bin path
 	InferenceEngine::Core m_ie;
 	InferenceEngine::InputsDataMap m_input_info;                 // input information
 	InferenceEngine::OutputsDataMap m_output_info;               // output information
 	InferenceEngine::ExecutableNetwork m_executable_network;     // trained model
-
+	
 	public:
 
 	Yolov5();                           // 
-	Yolov5(std::string xml_path, std::string bin_path, int input_weight, int input_height = 640);
+	Yolov5(std::string xml_path, std::string bin_path, int input_weight, int input_height);
 
 	void init_yolov5_detector();        // init detector class
 
-	void detect_yolov5();               // detect function
+	void detect_yolov5(cv::Mat src_);   // detect function
+
+	void show_res();
 
 	private:
 
-	void input2res();                   // Mat yuchuli
+	void input2res(cv::Mat& src_);   // Mat yuchuli
 
 	void read_network();                // read network to class
 
