@@ -55,6 +55,7 @@ void Yolov5::read_network(){
 	this->m_executable_network = m_ie.LoadNetwork(network, "CPU");
 	printf("network info: ");
 	printf("i=%ld,out=%ld\n",m_input_info.size(),m_output_info.size());
+    
 }
 
 
@@ -110,7 +111,7 @@ void Yolov5::input2res(cv::Mat& src_){
     cv::waitKey(0);
     #endif
 
-    
+
 
 }
 
