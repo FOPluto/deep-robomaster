@@ -8,7 +8,9 @@
                 "/usr/include/x86_64-linux-gnu",
                 "/usr/local/include/opencv",
                 "/usr/local/include/opencv2",
-                "/home/fo_pluto/libtorch/include"
+                "/opt/intel/openvino/runtime/include",
+                "/opt/intel/openvino/samples/cpp/common/utils/include",
+                "/opt/intel/openvino/samples/cpp/common/format_reader/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
