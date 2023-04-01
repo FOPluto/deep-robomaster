@@ -46,6 +46,8 @@ class Yolov5{
 
 	private:
 
+	void detect();
+
 	void input2res(cv::Mat& src_);   // Mat yuchuli
 
 	void read_network();                // read network to class

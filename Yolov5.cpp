@@ -21,11 +21,18 @@ Yolov5::Yolov5(std::string xml_path, std::string bin_path, int input_width, int 
     this->m_input_width = input_width;
 }
 
+
+
+
+
 void Yolov5::init_yolov5_detector(){
     printf("--------------start read network--------------\n");
     this->read_network();
     printf("---------------------done---------------------\n");
 }
+
+
+
 
 void Yolov5::read_network(){
     std::vector<std::string> availableDevice = this->m_ie.GetAvailableDevices();
@@ -55,7 +62,7 @@ void Yolov5::read_network(){
 	this->m_executable_network = m_ie.LoadNetwork(network, "CPU");
 	printf("network info: ");
 	printf("i=%ld,out=%ld\n",m_input_info.size(),m_output_info.size());
-    
+
 }
 
 
@@ -111,8 +118,10 @@ void Yolov5::input2res(cv::Mat& src_){
     cv::waitKey(0);
     #endif
 
+}
 
-
+void Yolov5::detect(){
+    
 }
 
 
