@@ -1,7 +1,7 @@
 #include "Yolov5.h"
 
 int main(){
-    cv::VideoCapture video_capture("input.mp4");
+    cv::VideoCapture video_capture("test.avi");
 
     cv::Mat frame;
 

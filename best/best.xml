@@ -11987,8 +11987,10 @@
 		<MO_version value="2023.0.0-9771-d7f47aa1228" />
 		<Runtime_version value="2023.0.0-9771-d7f47aa1228" />
 		<conversion_parameters>
+			<framework value="onnx" />
 			<input_model value="DIR/best.onnx" />
 			<input_shape value="[1,3,640,640]" />
+			<output value="output" />
 		</conversion_parameters>
 		<legacy_frontend value="False" />
 	</rt_info>
