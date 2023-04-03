@@ -5,10 +5,8 @@
 #include "Yolov5.h"
 
 #define DEBUG
-
 #define WINDOW_NAME "res_show"
-
-
+#define endl "\n"
 
 std::vector<float> anchors = {
 	10,13, 16,30, 33,23,
@@ -89,10 +87,29 @@ void Yolov5::read_network(){
     for(int i = 0;i < availableDevice.size();i++){
         printf("avaliable device: %s\n", availableDevice[i].c_str());
     }
-	// get network from best and bin path
-	auto network = m_ie.ReadNetwork(this->m_xml_path, this->m_bin_path);
-    // load network
-	this->m_executable_network = m_ie.LoadNetwork(network, "CPU");
+    // 加载 IR 模型
+    InferenceEngine::CNNNetwork network = m_ie.ReadNetwork(this->m_xml_path, this->m_bin_path);
+
+
+	// get info from network
+	this->m_input_info = InferenceEngine::InputsDataMap(network.getInputsInfo());
+	this->m_output_info = InferenceEngine::OutputsDataMap(network.getOutputsInfo());
+	
+    //获取输入并进行设置（第一种方式）
+    auto item = m_input_info.begin();
+    image_info_name = item->first;         //获取image_info输入的名字
+    auto image_info_ptr = item->second;    //获取image_info输入的指针
+    //配置input_tensor输入：U8,NCHW, 保持默认的禁止自动放缩输入图像和禁止自动转换颜色通道
+    image_info_ptr->setPrecision(InferenceEngine::Precision::FP32); 
+    image_info_ptr->setLayout(InferenceEngine::Layout::NCHW);
+    image_info_ptr->getPreProcess().setColorFormat(InferenceEngine::ColorFormat::BGR);
+	image_info_ptr->getPreProcess().setResizeAlgorithm(RESIZE_BILINEAR);
+    //获取输出并进行设置(第二种方式)
+	for (auto &output : m_output_info){
+	    output.second->setPrecision(Precision::FP32);
+	}
+    
+    this->m_executable_network = m_ie.LoadNetwork(network, "CPU");
 }
 
 
@@ -136,7 +153,7 @@ void Yolov5::input2res(cv::Mat& src_){
         }
     }
 
-    cvtColor(src_, src_, cv::COLOR_BGR2RGB);
+    // cvtColor(src_, src_, cv::COLOR_BGR2RGB);
 
     if(scale_x < 1){
         cv::copyMakeBorder(src_, src_, 0, 0, 0, this->m_input_width - src_.cols, BORDER_CONSTANT, cv::Scalar(0, 0, 0));
@@ -145,30 +162,6 @@ void Yolov5::input2res(cv::Mat& src_){
     }
 
     Mat input_blob = cv::dnn::blobFromImage(src_, 1 / 255.0, Size(640, 640), Scalar(0, 0, 0), true, false);
-
-    // 加载 IR 模型
-    InferenceEngine::CNNNetwork network = m_ie.ReadNetwork(this->m_xml_path, this->m_bin_path);
-
-
-	// get info from network
-	this->m_input_info = InferenceEngine::InputsDataMap(network.getInputsInfo());
-	this->m_output_info = InferenceEngine::OutputsDataMap(network.getOutputsInfo());
-	
-    //获取输入并进行设置（第一种方式）
-    auto item = m_input_info.begin();
-    image_info_name = item->first;         //获取image_info输入的名字
-    auto image_info_ptr = item->second;    //获取image_info输入的指针
-    //配置input_tensor输入：U8,NCHW, 保持默认的禁止自动放缩输入图像和禁止自动转换颜色通道
-    image_info_ptr->setPrecision(InferenceEngine::Precision::FP32); // U8最通用,参考资料：
-    image_info_ptr->setLayout(InferenceEngine::Layout::NCHW);
-    image_info_ptr->getPreProcess().setColorFormat(InferenceEngine::ColorFormat::RGB);
-
-    //获取输出并进行设置(第二种方式)
-	for (auto &output : m_output_info){
-	    output.second->setPrecision(Precision::FP32);
-	}
-
-    m_executable_network = m_ie.LoadNetwork(network, "CPU");
 
     // 创建推理请求
     InferenceEngine::InferRequest infer_request = m_executable_network.CreateInferRequest();
@@ -183,10 +176,10 @@ void Yolov5::input2res(cv::Mat& src_){
 
     size_t img_size = src_.cols * src_.rows;
 
-    for(size_t row =0;row<640;row++){
-        for(size_t col=0;col<640;col++){
-            for(size_t ch =0;ch<3;ch++){
-                data[img_size*ch + row*640 + col] = float(src_.at<Vec3b>(row,col)[ch]);
+    for(size_t row = 0;row < original_height;row ++){
+        for(size_t col = 0;col < original_width;col ++){
+            for(size_t ch = 0;ch < 3;ch ++){
+                data[img_size * ch + row * original_width + col] = float(src_.at<Vec3b>(row,col)[ch]) / 255.0f;
             }
         }
     }
@@ -209,33 +202,39 @@ void Yolov5::input2res(cv::Mat& src_){
     int num_detections = output_dims[1];
 
     // 处理输出结果
-    // 遍历检测到的人脸框
-    cout << "image" << endl;
+    // 遍历检测到的框
+    int sum = 0;
+    // std::vector<struct> 
+    vector<int> confidence;
+    vector<int> classes;
+
     for (int i = 0; i < num_detections; ++i) {
         // 获取框的属性
-        float image_id = output_data[i * 51 + 0];
-        float confidence = output_data[i * 51 + 4];
-
-        float res[51];
-        for(int j = 0;j < 51;j++){
-            res[j] = output_data[j + i * 51];
-            // cout << output_data[j + i * 51] << " ";
-        }
-        if(confidence > 0.90) {
+        float confidence = output_data[i * output_dims[2] + 4];
+        if(confidence > 0.45) {
+            
+            float res[51];
+            for(int j = 0;j < output_dims[2];j++){
+                res[j] = output_data[j + i * output_dims[2]];
+                // cout << output_data[j + i * 51] << " ";
+            }
+            #ifdef DEBUG
             cout << "confidence: " << confidence << endl;
+            sum ++;
+            #endif
         }
-        // 处理人脸框属性
         // ...
     }
-    cout << "done" << endl;
 
     #ifdef DEBUG
+    cout << "num: " << sum << endl;
     draw_res();
+    cv::imshow("src_image", src_);
+    cv::waitKey(1);
     #endif
 }
 
 void Yolov5::draw_res(){
-
 }
 
 

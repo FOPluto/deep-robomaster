@@ -8,9 +8,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # openvino
-set(CMAKE_PREFIX_PATH "/opt/intel/openvino")
+set(CMAKE_PREFIX_PATH "/opt/intel/openvino/")
 
-add_definitions(-std=c++14)
+set(CMAKE_CXX_STANDARD 14)
 
 find_package(InferenceEngine REQUIRED)
 

@@ -8,6 +8,7 @@
 #include <cstring>
 #include <opencv2/dnn.hpp>
 #include <inference_engine.hpp>
+#include <vector>
 
 // #define DEBUG
 
