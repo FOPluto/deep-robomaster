@@ -25,6 +25,7 @@ using namespace InferenceEngine;
 struct DetectRect{
 	cv::Point min_point;
 	cv::Point max_point;
+	cv::Rect rect;
 	std::vector<cv::Point> points;
 	std::vector<std::pair<float, int>> classes;
 	cv::Point cen_p;
@@ -57,9 +58,7 @@ class Yolov5{
 
 	int class_num;
 
-	vector<Rect> boxes;
-	vector<int> classIds;
-	vector<float> confidences;
+	std::vector<DetectRect> res_rects;                           // res rects
 
 	public:
 
@@ -82,5 +81,7 @@ class Yolov5{
 
 	float get_IOU(cv::Point);
 
-	void draw_res();
+	void draw_res(cv::Mat &src_);
+
+	void clear_work();
 };

@@ -126,10 +126,16 @@ bool Yolov5::is_allready()
 }
 
 
+void Yolov5::clear_work(){
+    this->res_rects.clear();
 
+}
 
 
 void Yolov5::input2res(cv::Mat& src_){
+
+    this->clear_work();
+
 	scale_x = (float)src_.cols / m_input_width;
 	scale_y = (float)src_.rows / m_input_height;
 
@@ -185,9 +191,7 @@ void Yolov5::input2res(cv::Mat& src_){
         }
     }
 
-
     infer_request.Infer();
-
 
     // 获取输出 blob
     auto output_blob = infer_request.GetBlob("output");
@@ -215,16 +219,11 @@ void Yolov5::input2res(cv::Mat& src_){
     for (int i = 0; i < num_detections; ++i) {
         // 获取框的属性
         float confidence = output_data[i * dims + 4];
-        if(confidence > 0.45) {
+        if(confidence > 0.40) {
             DetectRect temp_rect;
             for(int j = 0;j < 5;j ++){
                 cv::Point temp_p = cv::Point(output_data[5 + i * dims + j * 2], output_data[6 + i * dims + j * 2]);
                 temp_rect.points.push_back(temp_p);
-                #ifdef DEBUG
-                if(j){
-                    cv::line(src_, temp_p, temp_rect.points[j - 1], Scalar(0, 255, 0), 1, 8, 0);
-                }
-                #endif
             }
             // classes
             for(int j = 0;j < num_of_classes;j++){
@@ -238,12 +237,18 @@ void Yolov5::input2res(cv::Mat& src_){
             temp_rect.class_id = temp_rect.classes[0].second;
             temp_rect.class_p = temp_rect.classes[0].first * confidence;
             
-            if(temp_rect.class_p < 0.70) continue;
+            if(temp_rect.class_p < 0.62) continue;
 
             // x, y, w, h, cof, cls
             cv::Point point = cv::Point(output_data[i * dims], output_data[i * dims + 1]);
             temp_rect.cen_p = point;
-            
+
+            int rect_width = output_data[i *dims + 2];
+            int rect_height = output_data[i * dims + 3];
+            temp_rect.min_point = cv::Point(temp_rect.cen_p.x - rect_width / 2, temp_rect.cen_p.y - rect_height / 2);
+            temp_rect.min_point = cv::Point(temp_rect.cen_p.x + rect_width / 2, temp_rect.cen_p.y + rect_height / 2);
+            temp_rect.rect = cv::Rect(temp_rect.min_point, temp_rect.max_point);
+
             #ifdef DEBUG
             cout << "confidence: " << confidence << endl;
             // circle(src_, temp_rect.cen_p, 4, cv::Scalar(255, 0, 0), 4);
@@ -261,34 +266,64 @@ void Yolov5::input2res(cv::Mat& src_){
             if(d1.class_p != d2.class_p) return d1.class_p > d2.class_p;
         });
         // IOU
-        cv::Point p01 = rects[0].points[0]; // zuo shang
-        cv::Point p02 = rects[0].points[1]; // zuo xia
-        cv::Point p03 = rects[0].points[2]; // you xia
-        cv::Point p04 = rects[0].points[3]; // you shang
-
-        #ifdef DEBUG
-        circle(src_, p01, 2, cv::Scalar(0, 0, 255), 2);
-        circle(src_, p02, 2, cv::Scalar(0, 0, 255), 2);
-        circle(src_, p03, 2, cv::Scalar(0, 0, 255), 2);
-        circle(src_, p04, 2, cv::Scalar(0, 0, 255), 2);
-        #endif
-        
+        res_rects.push_back(rects[0]); // push the best to the res_vector
+        bool flag = true;
         for(int i = 1;i < rects.size();i++){
-            cv::Point p1 = rects[i].points[0];
-            cv::Point p2 = rects[i].points[1];
-            cv::Point p3 = rects[i].points[2];
-            cv::Point p4 = rects[i].points[3];
+            for(auto item_max_rect : res_rects){
+                cv::Rect max_p_rect = item_max_rect.rect; // max p rect
+                cv::Rect item_p_rect = rects[i].rect; // item p rect
+
+                int x1 = std::max(max_p_rect.x, item_p_rect.x);
+                int y1 = std::max(max_p_rect.y, item_p_rect.y);
+                int x2 = std::min(max_p_rect.x + max_p_rect.width, item_p_rect.x + item_p_rect.width);
+                int y2 = std::min(max_p_rect.y + max_p_rect.height, item_p_rect.y + item_p_rect.height);
+
+                int intersectionArea = std::max(0, x2 - x1) * std::max(0, y2 - y1);
+
+                int or_space = max_p_rect.area() + item_p_rect.area() - intersectionArea;
+
+                double IOU_with_the_max = (double)intersectionArea / or_space;
+
+                if(IOU_with_the_max >= 0.90) {
+                    flag = false;
+                    break;
+                }
+            }
+            if(flag){
+                res_rects.push_back(rects[i]);
+            }
         }
     }
 
     #ifdef DEBUG
+    this->draw_res(src_);
     cout << "num: " << sum << endl;
     cv::imshow("src_image", src_);
     cv::waitKey(1);
     #endif
 }
 
-void Yolov5::draw_res(){
+void Yolov5::draw_res(cv::Mat &src_){
+    // iterate the res rect
+    for(auto item_res_rect : res_rects){
+        cv::Point p01 = item_res_rect.points[0]; // zuo shang
+        cv::Point p02 = item_res_rect.points[1]; // zuo xia
+        cv::Point p03 = item_res_rect.points[2]; // you xia
+        cv::Point p04 = item_res_rect.points[3]; // you shang
+
+        #ifdef DEBUG
+        cv::circle(src_, p01, 2, cv::Scalar(0, 0, 255), 2);
+        cv::circle(src_, p02, 2, cv::Scalar(0, 0, 255), 2);
+        cv::circle(src_, p03, 2, cv::Scalar(0, 0, 255), 2);
+        cv::circle(src_, p04, 2, cv::Scalar(0, 0, 255), 2);
+        cv::line(src_, p01, p02, cv::Scalar(0, 255, 0));
+        cv::line(src_, p01, p03, cv::Scalar(0, 255, 0));
+        cv::line(src_, p01, p04, cv::Scalar(0, 255, 0));
+        cv::line(src_, p02, p03, cv::Scalar(0, 255, 0));
+        cv::line(src_, p02, p04, cv::Scalar(0, 255, 0));
+        cv::line(src_, p03, p04, cv::Scalar(0, 255, 0));
+        #endif        
+    }
 }
 
 
