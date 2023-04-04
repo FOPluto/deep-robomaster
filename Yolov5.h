@@ -23,10 +23,13 @@ using namespace InferenceEngine;
 // yolov5_detector
 
 struct DetectRect{
+	cv::Point min_point;
+	cv::Point max_point;
 	std::vector<cv::Point> points;
 	std::vector<std::pair<float, int>> classes;
 	cv::Point cen_p;
-	int class_p;
+	int class_id;
+	double class_p;
 };
 
 class Yolov5{
@@ -76,6 +79,8 @@ class Yolov5{
 	void read_network();                // read network to class
 
 	bool is_allready();                 // judge if is allready
+
+	float get_IOU(cv::Point);
 
 	void draw_res();
 };

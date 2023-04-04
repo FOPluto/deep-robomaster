@@ -210,6 +210,8 @@ void Yolov5::input2res(cv::Mat& src_){
 
     std::vector<DetectRect> rects;
 
+    std::vector<DetectRect> final_rects;
+
     for (int i = 0; i < num_detections; ++i) {
         // 获取框的属性
         float confidence = output_data[i * dims + 4];
@@ -226,14 +228,15 @@ void Yolov5::input2res(cv::Mat& src_){
             }
             // classes
             for(int j = 0;j < num_of_classes;j++){
-                temp_rect.classes[j].first = output_data[15 + j + i * dims];
-                temp_rect.classes[j].second = j;
+                std::pair<float, int> temp_item = {output_data[15 + j + i * dims], j};
+                temp_rect.classes.push_back(temp_item);
             }
             // sort
-            std::sort(temp_rect.classes, temp_rect.classes + num_of_classes, [](const std::pair<float, int> a, const std::pair<float, int> b){
+            std::sort(temp_rect.classes.begin(), temp_rect.classes.end(), [](const std::pair<float, int>& a, const std::pair<float, int>& b){
                 return a.first > b.first;
             });
-            temp_rect.class_p = temp_rect.classes[0].second;
+            temp_rect.class_id = temp_rect.classes[0].second;
+            temp_rect.class_p = temp_rect.classes[0].first * confidence;
             
             if(temp_rect.class_p < 0.70) continue;
 
@@ -243,7 +246,7 @@ void Yolov5::input2res(cv::Mat& src_){
             
             #ifdef DEBUG
             cout << "confidence: " << confidence << endl;
-            circle(src_, point, 4, cv::Scalar(255, 0, 0), 4);
+            // circle(src_, temp_rect.cen_p, 4, cv::Scalar(255, 0, 0), 4);
             sum ++;
             #endif
 
@@ -251,6 +254,31 @@ void Yolov5::input2res(cv::Mat& src_){
             rects.push_back(temp_rect);
         }
         // ...
+    }
+    // sort
+    if(rects.size()){
+        std::sort(rects.begin(), rects.end(), [](const DetectRect& d1, const DetectRect& d2){
+            if(d1.class_p != d2.class_p) return d1.class_p > d2.class_p;
+        });
+        // IOU
+        cv::Point p01 = rects[0].points[0]; // zuo shang
+        cv::Point p02 = rects[0].points[1]; // zuo xia
+        cv::Point p03 = rects[0].points[2]; // you xia
+        cv::Point p04 = rects[0].points[3]; // you shang
+
+        #ifdef DEBUG
+        circle(src_, p01, 2, cv::Scalar(0, 0, 255), 2);
+        circle(src_, p02, 2, cv::Scalar(0, 0, 255), 2);
+        circle(src_, p03, 2, cv::Scalar(0, 0, 255), 2);
+        circle(src_, p04, 2, cv::Scalar(0, 0, 255), 2);
+        #endif
+        
+        for(int i = 1;i < rects.size();i++){
+            cv::Point p1 = rects[i].points[0];
+            cv::Point p2 = rects[i].points[1];
+            cv::Point p3 = rects[i].points[2];
+            cv::Point p4 = rects[i].points[3];
+        }
     }
 
     #ifdef DEBUG
