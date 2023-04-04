@@ -26,7 +26,7 @@ struct DetectRect{
 	std::vector<cv::Point> points;
 	std::vector<std::pair<float, int>> classes;
 	cv::Point cen_p;
-	int class;
+	int class_p;
 };
 
 class Yolov5{
