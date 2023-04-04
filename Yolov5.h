@@ -17,7 +17,18 @@ using namespace cv;
 using namespace cv::dnn;
 using namespace InferenceEngine;
 
+// define red as enermy
+// #define RED_ENERMY
+
 // yolov5_detector
+
+struct DetectRect{
+	std::vector<cv::Point> points;
+	std::vector<std::pair<float, int>> classes;
+	cv::Point cen_p;
+	int class;
+};
+
 class Yolov5{
 	private:
 

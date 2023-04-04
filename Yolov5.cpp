@@ -84,7 +84,7 @@ void Yolov5::init_yolov5_detector(){
 void Yolov5::read_network(){
     this->m_ie.SetConfig({{CONFIG_KEY(CPU_THREADS_NUM), "8"}}, "CPU");
     std::vector<std::string> availableDevice = this->m_ie.GetAvailableDevices();
-    for(int i = 0;i < availableDevice.size();i++){
+    for(size_t i = 0;i < availableDevice.size();i++){
         printf("avaliable device: %s\n", availableDevice[i].c_str());
     }
     // 加载 IR 模型
@@ -152,8 +152,9 @@ void Yolov5::input2res(cv::Mat& src_){
             cv::resize(src_, src_, cv::Size(src_.cols / max_scale, src_.rows / max_scale));
         }
     }
-
-    // cvtColor(src_, src_, cv::COLOR_BGR2RGB);
+    #ifdef RED_ENERMY 
+    cvtColor(src_, src_, cv::COLOR_BGR2RGB);
+    #endif
 
     if(scale_x < 1){
         cv::copyMakeBorder(src_, src_, 0, 0, 0, this->m_input_width - src_.cols, BORDER_CONSTANT, cv::Scalar(0, 0, 0));
@@ -166,8 +167,8 @@ void Yolov5::input2res(cv::Mat& src_){
     // 创建推理请求
     InferenceEngine::InferRequest infer_request = m_executable_network.CreateInferRequest();
 
-    auto original_height = src_.rows;
-    auto original_width = src_.cols;
+    size_t original_height = src_.rows;
+    size_t original_width = src_.cols;
     /* 获得模型的image_info输入的数据缓冲 */
     Blob::Ptr image_info_blob = infer_request.GetBlob(image_info_name);
     /** 向模型的image_info输入的数据缓冲填入数据: height, width, scale=1.0 **/
@@ -195,7 +196,7 @@ void Yolov5::input2res(cv::Mat& src_){
     auto output_data = output_blob->buffer().as<InferenceEngine::PrecisionTrait<InferenceEngine::Precision::FP32>::value_type*>();
 
     // 获取输出 blob 大小和维度信息
-    auto output_size = output_blob->size();
+    // auto output_size = output_blob->size();
     auto output_dims = output_blob->getTensorDesc().getDims();
 
     // 获取检测到的框数量
@@ -204,31 +205,56 @@ void Yolov5::input2res(cv::Mat& src_){
     // 处理输出结果
     // 遍历检测到的框
     int sum = 0;
-    // std::vector<struct> 
-    vector<int> confidence;
-    vector<int> classes;
+    int dims = output_dims[2]; // weidu
+    int num_of_classes = dims - 15; // get num of classes
+
+    std::vector<DetectRect> rects;
 
     for (int i = 0; i < num_detections; ++i) {
         // 获取框的属性
-        float confidence = output_data[i * output_dims[2] + 4];
+        float confidence = output_data[i * dims + 4];
         if(confidence > 0.45) {
-            
-            float res[51];
-            for(int j = 0;j < output_dims[2];j++){
-                res[j] = output_data[j + i * output_dims[2]];
-                // cout << output_data[j + i * 51] << " ";
+            DetectRect temp_rect;
+            for(int j = 0;j < 5;j ++){
+                cv::Point temp_p = cv::Point(output_data[5 + i * dims + j * 2], output_data[6 + i * dims + j * 2]);
+                temp_rect.points.push_back(temp_p);
+                #ifdef DEBUG
+                if(j){
+                    cv::line(src_, temp_p, temp_rect.points[j - 1], Scalar(0, 255, 0), 1, 8, 0);
+                }
+                #endif
             }
+            // classes
+            for(int j = 0;j < num_of_classes;j++){
+                temp_rect.classes[j].first = output_data[15 + j + i * dims];
+                temp_rect.classes[j].second = j;
+            }
+            // sort
+            std::sort(temp_rect.classes, temp_rect.classes + num_of_classes, [](const std::pair<float, int> a, const std::pair<float, int> b){
+                return a.first > b.first;
+            });
+            temp_rect.class_p = temp_rect.classes[0].second;
+            
+            if(temp_rect.class_p < 0.70) continue;
+
+            // x, y, w, h, cof, cls
+            cv::Point point = cv::Point(output_data[i * dims], output_data[i * dims + 1]);
+            temp_rect.cen_p = point;
+            
             #ifdef DEBUG
             cout << "confidence: " << confidence << endl;
+            circle(src_, point, 4, cv::Scalar(255, 0, 0), 4);
             sum ++;
             #endif
+
+            // add to rects
+            rects.push_back(temp_rect);
         }
         // ...
     }
 
     #ifdef DEBUG
     cout << "num: " << sum << endl;
-    draw_res();
     cv::imshow("src_image", src_);
     cv::waitKey(1);
     #endif
