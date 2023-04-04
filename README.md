@@ -12,7 +12,7 @@
 2. OpenCV：3.4.9
 3. OpenVINO：version 2022.3
 
-## 项目环境配置
+## Openvino C++配置
 
 首先确保您的ubuntu系统具备以下环境：
 
@@ -72,6 +72,10 @@ source /opt/intel/openvino/openvino.sh
 ```
 
 这样每次启动命令行就会自动检测是否配置好，并且export一下环境变量。
+
+## Openvino Python必要工具安装
+
+
 
 ## 项目结构
 
