@@ -6,7 +6,6 @@
 
 #define DEBUG
 #define WINDOW_NAME "res_show"
-#define endl "\n"
 
 std::vector<float> anchors = {
 	10,13, 16,30, 33,23,
@@ -190,8 +189,17 @@ void Yolov5::input2res(cv::Mat& src_){
             }
         }
     }
+    // 获取开始时间戳
+    auto start = std::chrono::system_clock::now();
 
     infer_request.Infer();
+
+    // 获取结束时间戳
+    auto end = std::chrono::system_clock::now();
+
+    // 计算时间差
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Infer Time elapsed: " << duration.count() << "ms" << std::endl;
 
     // 获取输出 blob
     auto output_blob = infer_request.GetBlob("output");

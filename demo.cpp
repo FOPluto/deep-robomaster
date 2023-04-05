@@ -14,8 +14,18 @@ int main(){
 
     // demo_yolov5_detector->detect_yolov5(demo_mat);
     while(video_capture.read(frame)){
+        // 获取开始时间戳
+        auto start = std::chrono::system_clock::now();
+
         demo_yolov5_detector->detect_yolov5(frame);
         demo_yolov5_detector->show_res();
+
+        // 获取结束时间戳
+        auto end = std::chrono::system_clock::now();
+
+        // 计算时间差
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        std::cout << "all Time elapsed: " << duration.count() << "ms" << std::endl;
     }
     return 0;
 }
