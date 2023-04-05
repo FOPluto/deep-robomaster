@@ -4,7 +4,7 @@
 
 #include "Yolov5.h"
 
-#define DEBUG
+// #define DEBUG
 #define WINDOW_NAME "res_show"
 
 std::vector<float> anchors = {
