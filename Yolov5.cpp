@@ -132,7 +132,9 @@ void Yolov5::clear_work(){
 
 
 void Yolov5::input2res(cv::Mat& src_){
-
+    // 获取开始时间戳
+    auto start = std::chrono::system_clock::now();
+    
     this->clear_work();
 
 	scale_x = (float)src_.cols / m_input_width;
@@ -189,8 +191,6 @@ void Yolov5::input2res(cv::Mat& src_){
             }
         }
     }
-    // 获取开始时间戳
-    auto start = std::chrono::system_clock::now();
 
     infer_request.Infer();
 
@@ -238,7 +238,7 @@ void Yolov5::input2res(cv::Mat& src_){
                 std::pair<float, int> temp_item = {output_data[15 + j + i * dims], j};
                 temp_rect.classes.push_back(temp_item);
             }
-            // sort
+            // sort get max
             std::sort(temp_rect.classes.begin(), temp_rect.classes.end(), [](const std::pair<float, int>& a, const std::pair<float, int>& b){
                 return a.first > b.first;
             });
