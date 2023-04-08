@@ -98,3 +98,11 @@ source /opt/intel/openvino/openvino.sh
 ```
 
 ## openvino介绍
+
+
+## V2RanA
+1. https://today.abyss.moe/guide/entry.html
+
+2. 安装 V2Ray 内核：
+v2rayA 提供的镜像脚本（推荐）
+curl -Ls https://mirrors.v2raya.org/go.sh | sudo bash
