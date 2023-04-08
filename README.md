@@ -1,10 +1,10 @@
 # deep-robomaster
 
-*燕山大学 "Ysu-Robomaster" 的深度学习模块代码,环境如下：*
+*燕山大学 "Ysu-Robomaster" (作者：`可莉不知道哦`)的深度学习模块代码,环境如下：*
 
 **Platform：**
 
-​	Ubuntu 18.04
+​ Ubuntu 18.04
 
 **environment：**
 
@@ -24,7 +24,7 @@ opencv 3.4.9 参考嘉宇写的脚本
 
 也可参考openvino官网步骤配置
 
-1. 拉取并编译 OpenVINO 源码
+### 拉取并编译 OpenVINO 源码
 
 从 OpenVINO 官网下载最新版本的源码，或者从 GitHub 上下载最新版本的源码，然后将其解压到你的机器上。
 
@@ -58,7 +58,7 @@ make -j$(nproc)
 sudo make install
 ```
 
- 	2,配置 OpenVINO 环境变量并检验是否安装完成。
+### 配置 OpenVINO 环境变量并检验是否安装完成
 
 ```shell
 cd /opt/intel/openvino/  # 进入安装目录
@@ -79,7 +79,7 @@ source /opt/intel/openvino/openvino.sh
 ├── best                             # 模型目录
 │   ├── best.mapping                 # mapping为可视化文件
 │   ├── best.onnx                    # onnx为原始模型
-│   ├── best.bin					 #
+│   ├── best.bin                     # bin文件
 │   └── best.xml                     # xml文件和bin文件为代码中调用的权重文件
 ├── build                            # build目录
 │   ├── CMakeCache.txt
@@ -99,10 +99,20 @@ source /opt/intel/openvino/openvino.sh
 
 ## openvino介绍
 
-
 ## V2RanA
-1. https://today.abyss.moe/guide/entry.html
+
+1. <https://today.abyss.moe/guide/entry.html> 在这个网址中，`V2rana`软件这个软件可以实现管理订阅
 
 2. 安装 V2Ray 内核：
 v2rayA 提供的镜像脚本（推荐）
+
+```shell
 curl -Ls https://mirrors.v2raya.org/go.sh | sudo bash
+```
+
+3. 启动服务：
+
+```shell
+sudo v2rana
+```
+
