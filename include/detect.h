@@ -12,6 +12,9 @@
 #include <vector>
 #include <chrono>
 
+#ifndef YOLOV5_DETECTOR
+#define YOLOV5_DETECTOR
+
 class Yolov5Detector(){
     private:
 	cv::Mat m_src_image;
@@ -38,4 +41,8 @@ class Yolov5Detector(){
 	std::vector<DetectRect> res_rects;                           // res rects
 
     public:
+
+    Yolov5Detector();
 }
+
+#endif

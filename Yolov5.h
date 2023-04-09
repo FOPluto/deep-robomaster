@@ -75,7 +75,7 @@ class Yolov5{
 
 	void infer2res(cv::Mat& src_);      // Mat yuchuli
 
-	void image_pre_processing(cv::Mat& src_)
+	void image_pre_processing(cv::Mat& src_);
 
 	void read_network();                // read network to class
 

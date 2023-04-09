@@ -4,7 +4,7 @@
 #ifndef YOLOV5_MANAGER
 #define YOLOV5_MANAGER
 
-class yolov5_manager
+class Yolov5Manager
 {
 private:
     /* data */
@@ -13,10 +13,14 @@ private:
     InferenceEngine::InferRequest* infer_request_buffer;
     int max_buffer;
 
+    Yolov5Detector* detector;
+
+    Yolov5Loader loader;
+
 
 public:
-    yolov5_manager();
-    ~yolov5_manager();
+    Yolov5Manager();
+    ~Yolov5Manager();
 
 private:
     void Product(cv::Mat src_);
