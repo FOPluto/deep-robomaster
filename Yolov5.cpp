@@ -127,11 +127,10 @@ bool Yolov5::is_allready()
 
 void Yolov5::clear_work(){
     this->res_rects.clear();
-
 }
 
 void image_pre_processing(cv::Mat& src_){
-    
+
 }
 
 void Yolov5::infer2res(cv::Mat& src_){

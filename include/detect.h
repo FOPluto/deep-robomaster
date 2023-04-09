@@ -1,6 +1,5 @@
 /**
  * @author 可莉不知道哦
- * 
 */
 
 #include <opencv2/opencv.hpp>
