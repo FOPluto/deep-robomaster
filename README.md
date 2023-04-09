@@ -22,7 +22,7 @@
 
 ```shell
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh # 注意，我们的规则要求将第三方库统一放在/opt目录的单独文件夹下
+sudo bash Miniconda3-latest-Linux-x86_64.sh # 注意，我们的规则要求将第三方库统一放在/opt目录的单独文件夹下
 ```
 
 注意最后需要`conda init`最后再将activate变量`source`出去：
@@ -32,6 +32,14 @@ sudo vim ~/.bashrc # 如果没有vim就执行sudo apt install vim即可
 # 在文件的末尾位置添加如下一行
 export PATH="/opt/miniconda/bin:$PATH"
 ```
+
+
+```shell
+conda create -n robomaster python=3.8
+pip install cython -i https://pypi.mirrors.ustc.edu.cn/simple/
+pip install -r /home/robomaster/openvino/src/bindings/python/wheel/requirements-dev.txt -i https://pypi.mirrors.ustc.edu.cn/simple/
+```
+
 
 ### opencv配置
 
@@ -92,13 +100,15 @@ cd build
 cmake一下，在使用 CMake 构建 OpenVINO 时，可以使用 `-DCMAKE_INSTALL_PREFIX` 选项来指定安装位置。例如，以下命令将 OpenVINO 安装到 `/opt/intel/openvino` 目录：
 
 ```shell
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/intel/openvino ..
+cmake -DCMAKE_BUILD_TYPE=Release \
+-DCMAKE_INSTALL_PREFIX=/opt/intel/openvino \
+set -DENABLE_PYTHON=ON  ..
 ```
 
 make编译：
 
 ```shell
-make --jobs=$(nproc --all)
+sudo make --jobs=$(nproc --all)
 ```
 
 等待几分钟，和opencv一样，但是不会出啥Bug，最后再安装：
@@ -117,6 +127,7 @@ source openvino.sh
 可以将以下命令添加到 ~/.bashrc 文件中：
 
 ```shell
+source /opt/miniconda/bin/activate robomaster
 source /opt/intel/openvino/openvino.sh
 ```
 
@@ -162,5 +173,5 @@ curl -Ls https://mirrors.v2raya.org/go.sh | sudo bash
 3. 启动服务：
 
 ```shell
-sudo v2rana
+sudo v2raya
 ```

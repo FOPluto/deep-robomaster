@@ -2,7 +2,7 @@
 
 int main(){
 
-    cv::VideoCapture video_capture("test.avi");
+    cv::VideoCapture video_capture("/home/robomaster/deep-robomaster/test.avi");
 
     cv::Mat frame;
 

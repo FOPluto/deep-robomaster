@@ -4,7 +4,7 @@
 
 #include "Yolov5.h"
 
-#define DEBUG
+// #define DEBUG
 #define WINDOW_NAME "res_show"
 
 std::vector<float> anchors = {
@@ -49,9 +49,6 @@ float sigmoid_function(float a)
 
 
 
-
-
-
 Yolov5::Yolov5(){
     this->m_xml_path = "./best.xml";
     this->m_bin_path = "./best.bin";
@@ -81,7 +78,8 @@ void Yolov5::init_yolov5_detector(){
 
 
 void Yolov5::read_network(){
-    this->m_ie.SetConfig({{CONFIG_KEY(CPU_THREADS_NUM), "8"}}, "CPU");
+    this->m_ie.SetConfig({{InferenceEngine::PluginConfigParams::KEY_DYN_BATCH_ENABLED, "YES"}}, "GPU");
+
     std::vector<std::string> availableDevice = this->m_ie.GetAvailableDevices();
     for(size_t i = 0;i < availableDevice.size();i++){
         printf("avaliable device: %s\n", availableDevice[i].c_str());
@@ -108,7 +106,9 @@ void Yolov5::read_network(){
 	    output.second->setPrecision(Precision::FP32);
 	}
     
-    this->m_executable_network = m_ie.LoadNetwork(network, "CPU");
+    // 指定GPU插件名称
+    std::string device_name = "CPU";
+    this->m_executable_network = m_ie.LoadNetwork(network, device_name);
 }
 
 
@@ -130,8 +130,11 @@ void Yolov5::clear_work(){
 
 }
 
+void image_pre_processing(cv::Mat& src_){
+    
+}
 
-void Yolov5::input2res(cv::Mat& src_){
+void Yolov5::infer2res(cv::Mat& src_){
     // 获取开始时间戳
     auto start = std::chrono::system_clock::now();
     
@@ -338,7 +341,7 @@ void Yolov5::draw_res(cv::Mat &src_){
 void Yolov5::detect_yolov5(cv::Mat src_){
     this->m_src_image = src_;
     this->m_src_image.copyTo(m_src_copy_image);
-    this->input2res(m_src_copy_image);
+    this->infer2res(m_src_copy_image);
 }
 
 

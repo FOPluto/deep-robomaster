@@ -10,6 +10,8 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 # openvino
 set(CMAKE_PREFIX_PATH "/opt/intel/openvino/")
 
+set(OpenVINO_DIR "/opt/intel/openvino")
+
 set(CMAKE_CXX_STANDARD 14)
 
 find_package(InferenceEngine REQUIRED)
