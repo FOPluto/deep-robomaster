@@ -292,7 +292,7 @@ void Yolov5::infer2res(cv::Mat& src_){
 
                 int or_space = max_p_rect.area() + item_p_rect.area() - intersectionArea;
 
-                double IOU_with_the_max = (double)intersectionArea / or_space;
+                float IOU_with_the_max = (float)intersectionArea / or_space;
 
                 if(IOU_with_the_max >= 0.90) {
                     flag = false;
@@ -339,8 +339,10 @@ void Yolov5::draw_res(cv::Mat &src_){
 
 void Yolov5::detect_yolov5(cv::Mat src_){
     this->m_src_image = src_;
-    this->m_src_image.copyTo(m_src_copy_image);
-    this->infer2res(m_src_copy_image);
+    // this->m_src_image.copyTo(m_src_copy_image);
+    // this->infer2res(m_src_copy_image);
+    // 优化改成
+    this->infer2res(m_src_image);
 }
 
 

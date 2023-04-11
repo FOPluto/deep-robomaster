@@ -23,11 +23,13 @@ public:
     ~Yolov5Manager();
 
 private:
-    void Product(cv::Mat src_);
+    void Product(cv::Mat& src_);
 
     void Consume();
 
     void InitYolov5Manager(std::string &model_path, std::string &device_name, int input_weight, int input_height);
+
+    void get_infer_request(cv::Mat& src_);
 };
 
 #endif
