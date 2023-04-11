@@ -10,6 +10,11 @@
 #include <inference_engine.hpp>
 #include <vector>
 #include <chrono>
+#include <mutex>
+#include <unordered_map>
+#include <map>
+#include <queue>
+#include <condition_variable>
 
 #ifndef YOLOV5_DETECTOR
 #define YOLOV5_DETECTOR
@@ -36,8 +41,6 @@ class Yolov5Detector(){
 	float threshold;
 
 	int class_num;
-
-	std::vector<DetectRect> res_rects;                           // res rects
 
     public:
 

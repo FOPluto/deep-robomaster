@@ -1,3 +1,8 @@
+/**
+ * @author 可莉不知道哦
+ * @brief 本文件主要为yolov5多线程的调用，i为生产者线程的索引，j为消费者线程的索引
+ * 
+*/
 #include "yolov5_manager.h"
 
 Yolov5Manager::Yolov5Manager(/* args */)
@@ -11,10 +16,14 @@ Yolov5Manager::~Yolov5Manager(){
 
 // 消费者线程，将消费buffer数组中的推理请求类
 void Yolov5Manager::Comsume(){
-    
+    while(1){
+        std::unique_lock<std::mutex> lock(mtx);
+        condition.wait(lock, []{return is_space_buffer.size() < 0});
+
+    }
 }
 
-//
+// 获得infer_request的函数
 void Yolov5Manager::get_infer_request(cv::Mat& src_){
     this->clear_work();
     // 第一步先将图片resize成为一个值
@@ -74,12 +83,16 @@ void Yolov5Manager::get_infer_request(cv::Mat& src_){
         }
     }
     // 存储request到buffer
-    this.buffer[i ++] = infer_request;
-    i = i >= 500 ? 0 : i; // 重置为0
+    infer_request_buffer.push(infer_request);
 }
+
+
 
 // 生产者线程，生产出来的推理请求存到buffer数组中
 void Yolov5Manager::Product(cv::Mat& src_){
+    // 想的是如果太大了的话也不好，就等着吧。
+    std::unique_lock<std::mutex> lock(mtx);
+    condition.wait(lock, []{return is_space_buffer.size() > 1e4});
     this->get_infer_request(src_);
 }
 

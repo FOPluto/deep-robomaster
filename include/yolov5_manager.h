@@ -4,19 +4,28 @@
 #ifndef YOLOV5_MANAGER
 #define YOLOV5_MANAGER
 
+struct request_struct
+{
+    InferenceEngine::InferRequest infer_request;
+    unsigned int idx;
+};
+
+
 class Yolov5Manager
 {
 private:
     /* data */
-    int i, j;
-    bool* is_space_buffer;
     InferenceEngine::ExecutableNetwork executable_network;
-    InferenceEngine::InferRequest* infer_request_buffer;
+    queue<InferenceEngine::InferRequest> infer_request_buffer;
+    priority_queue<>
     int max_buffer;
 
     Yolov5Detector* detector;
 
     Yolov5Loader* loader;
+
+	std::mutex mtx;
+	std::condition_variable condition;
 
 public:
     Yolov5Manager();
