@@ -15,6 +15,7 @@
 #include <map>
 #include <queue>
 #include <condition_variable>
+#include <thread>
 
 #ifndef YOLOV5_DETECTOR
 #define YOLOV5_DETECTOR

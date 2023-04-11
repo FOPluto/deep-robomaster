@@ -1,7 +1,7 @@
 #include "detect.h"
 
-#ifndef Yolov5Loader
-#define Yolov5Loader
+#ifndef YOLOV5LOADER
+#define YOLOV5LOADER
 
 class Yolov5Loader{
     private:

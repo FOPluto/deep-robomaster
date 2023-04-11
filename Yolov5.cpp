@@ -134,9 +134,11 @@ void image_pre_processing(cv::Mat& src_){
 }
 
 void Yolov5::infer2res(cv::Mat& src_){
+    #ifdef DEBUG
     // 获取开始时间戳
     auto start = std::chrono::system_clock::now();
-    
+    #endif // DEBUG
+
     this->clear_work();
 
 	scale_x = (float)src_.cols / m_input_width;
@@ -196,12 +198,16 @@ void Yolov5::infer2res(cv::Mat& src_){
 
     infer_request.Infer();
 
+    #ifdef DEBUG
+
     // 获取结束时间戳
     auto end = std::chrono::system_clock::now();
 
     // 计算时间差
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << "Infer Time elapsed: " << duration.count() << "ms" << std::endl;
+
+    #endif // DEBUG
 
     // 获取输出 blob
     auto output_blob = infer_request.GetBlob("output");
