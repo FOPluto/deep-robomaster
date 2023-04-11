@@ -9,6 +9,7 @@
 #include <opencv2/dnn.hpp>
 #include <inference_engine.hpp>
 #include <vector>
+#include <chrono>
 
 // #define DEBUG
 
@@ -25,6 +26,7 @@ using namespace InferenceEngine;
 struct DetectRect{
 	cv::Point min_point;
 	cv::Point max_point;
+	cv::Rect rect;
 	std::vector<cv::Point> points;
 	std::vector<std::pair<float, int>> classes;
 	cv::Point cen_p;
@@ -43,12 +45,11 @@ class Yolov5{
 	std::string image_info_name;
 	std::string m_xml_path;                                      // xml path
 	std::string m_bin_path;                                      // bin path
+	
 	InferenceEngine::Core m_ie;
 	InferenceEngine::InputsDataMap m_input_info;                 // input information
 	InferenceEngine::OutputsDataMap m_output_info;               // output information
 	InferenceEngine::ExecutableNetwork m_executable_network;     // trained model
-	
-	InferenceEngine::InferRequest infer_request;
 
 	float scale_x;
 	float scale_y;
@@ -57,9 +58,7 @@ class Yolov5{
 
 	int class_num;
 
-	vector<Rect> boxes;
-	vector<int> classIds;
-	vector<float> confidences;
+	std::vector<DetectRect> res_rects;                           // res rects
 
 	public:
 
@@ -74,7 +73,9 @@ class Yolov5{
 
 	private:
 
-	void input2res(cv::Mat& src_);   // Mat yuchuli
+	void infer2res(cv::Mat& src_);      // Mat yuchuli
+
+	void image_pre_processing(cv::Mat& src_);
 
 	void read_network();                // read network to class
 
@@ -82,5 +83,7 @@ class Yolov5{
 
 	float get_IOU(cv::Point);
 
-	void draw_res();
+	void draw_res(cv::Mat &src_);
+
+	void clear_work();
 };
