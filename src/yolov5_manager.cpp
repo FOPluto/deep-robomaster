@@ -26,7 +26,7 @@ Yolov5Manager::~Yolov5Manager(){
 */
 InferenceEngine::InferRequest Yolov5Manager::get_infer_request(cv::Mat& src_){
     this->clear_work();
-    // 第一步先将图片resize成为一个值，模型输入为[1, 3, 640, 640]的tensor张量
+    // 第一步先将图片resize成为一个值，模型输入为[1, 3, 416, 416]的tensor张量
     float scale_x = (float)src_.cols / m_input_width;
     float scale_y = (float)src_.rows / m_input_height;
     // resize即可
@@ -110,10 +110,8 @@ InferenceEngine::SizeVector Yolov5Manager::get_infer_res(InferenceEngine::InferR
 
 
 cv::Point Yolov5Manager::get_res_ans(float* item_infer_res){
-
     // 获取检测到的框数量
     int num_detections = output_dims[1];
-
     // 处理输出结果
     // 遍历检测到的框
     int sum = 0;
@@ -209,15 +207,15 @@ cv::Point Yolov5Manager::get_res_ans(float* item_infer_res){
 
 
 // 初始化代码
-void Yolov5Manager::InitYolov5Manager(std::string &model_path, std::string &device_name, int input_weight = 640, int input_height = 640){
+void Yolov5Manager::InitYolov5Manager(std::string &model_path, std::string &device_name, int input_weight = 416, int input_height = 416){
     // 加载模型
     if(model_path[model_path.length() - 1] == '/')
         this->executable_network = this->loader->loadNetwork(model_path + "best.xml", model_path + "best.bin", device_name, input_weight, input_height);
     else
         this->executable_network = this->loader->loadNetwork(model_path + "/best.xml", model_path + "/best.bin", device_name, input_weight, input_height);
     // 初始化参数，后期改为xml读取
-    this->m_input_height = 640; // 模型需要的图片大小
-    this->m_input_width = 640; 
+    this->m_input_height = 416; // 模型需要的图片大小，如果是原本没有转换过的模型
+    this->m_input_width = 416; 
     this->max_buffer = 1000; // 最大的buffer队列大小
 }
 /**

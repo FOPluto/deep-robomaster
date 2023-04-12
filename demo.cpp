@@ -1,3 +1,7 @@
+/**
+ * @author 可莉不知道哦
+ * @brief 测试文件，后期可以改成测试类
+*/
 #include "Yolov5.h"
 
 int main(){
@@ -10,9 +14,7 @@ int main(){
 
     // init
     demo_yolov5_detector->init_yolov5_detector();
-    // use video to demo
-
-    // demo_yolov5_detector->detect_yolov5(demo_mat);
+    
     while(video_capture.read(frame)){
         // 获取开始时间戳
         auto start = std::chrono::system_clock::now();

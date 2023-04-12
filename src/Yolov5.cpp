@@ -1,5 +1,7 @@
 /**
  * @author FoPluto
+ * @brief 本文件是非多线程的Yolov5模型实现调用，如果急用可以用这个
+ * @details 通过openvino实现调用模型，加速模型推理
 */
 
 #include "Yolov5.h"
