@@ -1,6 +1,7 @@
 /**
  * @author 可莉不知道哦
  * @brief 本文件主要为yolov5多线程的调用，i为生产者线程的索引，j为消费者线程的索引
+ * @bug 尚未写完代码，bug应该不少
  * 
 */
 #include "yolov5_manager.h"

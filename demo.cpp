@@ -6,7 +6,7 @@ int main(){
 
     cv::Mat frame;
 
-    Yolov5* demo_yolov5_detector = new Yolov5("/home/robomaster/deep-robomaster/best/best.xml", "/home/robomaster/deep-robomaster/best/best.bin", 640, 640);
+    Yolov5* demo_yolov5_detector = new Yolov5("/home/robomaster/deep-robomaster/best/model/opt-0527-001.xml", "/home/robomaster/deep-robomaster/model/opt-0527-001.bin", 416, 416);
 
     // init
     demo_yolov5_detector->init_yolov5_detector();

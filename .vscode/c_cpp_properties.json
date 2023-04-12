@@ -10,7 +10,7 @@
                 "/usr/local/include/opencv2",
                 "/opt/intel/openvino/runtime/include",
                 "/opt/intel/openvino/samples/cpp/common/utils/include",
-                "${workspaceFolder}/include"
+                "${workspaceFolder}/include/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
