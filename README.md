@@ -12,7 +12,7 @@
 2. OpenCV：3.4.9
 3. OpenVINO：version 2022.3
 
-## 项目环境配置
+## Openvino C++配置
 
 首先确保您的ubuntu系统具备以下环境：
 
@@ -43,13 +43,11 @@ pip install cython -i https://pypi.mirrors.ustc.edu.cn/simple/
 pip install -r /home/robomaster/openvino/src/bindings/python/wheel/requirements-dev.txt -i https://pypi.mirrors.ustc.edu.cn/simple/
 ```
 
-
 ### opencv配置
 
-opencv 3.4.9 参考嘉宇写的脚本，放在项目中software文件夹中
+opencv 3.4.9 参考嘉宇写的脚本，放在项目中tools文件夹中
 
 直接执行opencv.sh脚本即可（脚本后续改进。。。）
-
 
 ### pybind11 安装
 
@@ -90,7 +88,6 @@ chmod +x scripts/submodule_update_with_gitee.sh
 chmod +x install_build_dependencies.sh
 sudo ./install_build_dependencies.sh
 ```
-
 
 此时会在当前文件夹下创建一个openvino的项目文件夹，进入文件夹，创建build文件夹，进入build文件夹
 
@@ -135,6 +132,8 @@ source /opt/intel/openvino/openvino.sh
 ```
 
 这样每次启动命令行就会自动检测是否配置好，并且export一下环境变量。
+
+## Openvino Python必要工具安装
 
 ## 项目结构
 

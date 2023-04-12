@@ -1,3 +1,7 @@
+/**
+ * @author 可莉不知道哦
+ * @brief 测试文件，后期可以改成测试类
+*/
 #include "Yolov5.h"
 
 int main(){
@@ -6,13 +10,11 @@ int main(){
 
     cv::Mat frame;
 
-    Yolov5* demo_yolov5_detector = new Yolov5("/home/robomaster/deep-robomaster/best/best.xml", "/home/robomaster/deep-robomaster/best/best.bin", 640, 640);
+    Yolov5* demo_yolov5_detector = new Yolov5("/home/robomaster/deep-robomaster/best/model/opt-0527-001.xml", "/home/robomaster/deep-robomaster/model/opt-0527-001.bin", 416, 416);
 
     // init
     demo_yolov5_detector->init_yolov5_detector();
-    // use video to demo
-
-    // demo_yolov5_detector->detect_yolov5(demo_mat);
+    
     while(video_capture.read(frame)){
         // 获取开始时间戳
         auto start = std::chrono::system_clock::now();
