@@ -6,11 +6,11 @@
 
 int main(){
 
-    cv::VideoCapture video_capture("/home/robomaster/deep-robomaster/test.avi");
+    cv::VideoCapture video_capture("/home/robomaster/deep-robomaster/test_001.avi");
 
     cv::Mat frame;
 
-    Yolov5* demo_yolov5_detector = new Yolov5("/home/robomaster/deep-robomaster/best/model/opt-0527-001.xml", "/home/robomaster/deep-robomaster/model/opt-0527-001.bin", 416, 416);
+    Yolov5* demo_yolov5_detector = new Yolov5("/home/robomaster/deep-robomaster/best/model/opt-0527-001.xml", "/home/robomaster/deep-robomaster/best/model/opt-0527-001.bin", 416, 416);
 
     // init
     demo_yolov5_detector->init_yolov5_detector();

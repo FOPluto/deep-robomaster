@@ -57,6 +57,8 @@ class Yolov5{
 	float threshold;
 
 	int class_num;
+
+	vector<DetectRect> res_rects;
 	
 	public:
 

@@ -16,11 +16,11 @@ set(CMAKE_CXX_STANDARD 14)
 
 find_package(InferenceEngine REQUIRED)
 
-include_directories(/home/robomaster/demo_opencv ${InferenceEngine_INCLUDE_DIRS})
+include_directories(/home/robomaster/deep-robomaster/include ${InferenceEngine_INCLUDE_DIRS})
 
 find_package(OpenCV REQUIRED)
 
-add_executable(${PROJECT_NAME} demo.cpp src/Yolov5.cpp src/yolov5_manager.cpp)
+add_executable(${PROJECT_NAME} demo.cpp src/Yolov5.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS} ${InferenceEngine_LIBRARIES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)

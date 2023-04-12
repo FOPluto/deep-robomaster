@@ -109,7 +109,7 @@ void Yolov5::read_network(){
 	}
     
     // 指定GPU插件名称
-    std::string device_name = "CPU";
+    std::string device_name = "GPU";
     this->m_executable_network = m_ie.LoadNetwork(network, device_name);
 }
 
