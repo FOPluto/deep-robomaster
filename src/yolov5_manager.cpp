@@ -18,58 +18,6 @@ Yolov5Manager::~Yolov5Manager(){
 
 
 /**
- * @name get_infer_res
- * @return float*（当前推理的结果output_data）
- * @brief 传入当前推理的推理请求，会先进行推理Infer，然后进行处理，获取到一个结果数组的开始位置output_data
- * @author 可莉不知道哦
-*/
-float* Yolov5Manager::get_infer_res(InferenceEngine::InferRequest& item_infer){
-    // 推理api
-    infer_request.Infer();
-    // 获取输出 blob。得到的结果为[1, , , 51]的张量，这个是模型固定好了的
-    auto output_blob = infer_request.GetBlob("output");
-    // 获取 blob 数据指针
-    float* output_data = output_blob->buffer().as<InferenceEngine::PrecisionTrait<InferenceEngine::Precision::FP32>::value_type*>();
-    // 获取输出 blob 大小和维度信息（该值固定）
-    // auto output_size = output_blob->size();
-    this->output_dims = output_blob->getTensorDesc().getDims();
-    // 返回指针
-    return output_data;
-}
-
-
-
-
-
-
-/**
- * @name Comsume
- * @return void（只是将结果存到队列中）
- * @details 消费者线程，将消费buffer数组中的推理请求类，将推理请求的类push到类中的infer_request_buffer中
- * @author 可莉不知道哦
- * @brief 获取的推理请求    ===>     得到原始结果
-*/
-void Yolov5Manager::Comsume(){
-    while(1){
-        // 如果queue中没东西，不能进行下一步
-        std::unique_lock<std::mutex> lock(mtx);
-        condition.wait(lock, []{return !q.empty(); });
-        // 再次确保一下size
-        if(infer_request_buffer.size()){
-            // 将infer取出来推理
-            auto item = infer_request_buffer.front();
-            infer_request_buffer.pop();
-            // 推理到结果，并且存到队列中
-            // 如果这里过大，需不需要锁住？
-            this->output_data_buffer.push(this->get_infer_res());
-        }
-    }
-}
-
-
-
-
-/**
  * @return 
  * @details 
  * @author 可莉不知道哦
@@ -136,19 +84,31 @@ InferenceEngine::InferRequest Yolov5Manager::get_infer_request(cv::Mat& src_){
 
 
 
-// 生产者线程，生产出来的推理请求存到buffer数组中
-void Yolov5Manager::Product(cv::Mat& src_){
-    // 如果buffer中东西过多，也需要锁住不处理了
-    std::unique_lock<std::mutex> lock(mtx);
-    condition.wait(lock, []{return is_space_buffer.size() > 1e4});
-    // 调用多线程x`主要函数
-    this->infer_request_buffer.push(this->get_infer_request(src_));
+/**
+ * @name get_infer_res
+ * @return InferenceEngine::SizeVector（当前推理的结果output_data）
+ * @brief 传入当前推理的推理请求，会先进行推理Infer，然后进行处理，获取到一个结果数组的开始位置output_data
+ * @author 可莉不知道哦
+*/
+InferenceEngine::SizeVector Yolov5Manager::get_infer_res(InferenceEngine::InferRequest& item_infer){
+    // 推理api
+    infer_request.Infer();
+    // 获取输出 blob。得到的结果为[1, , , 51]的张量，这个是模型固定好了的
+    auto output_blob = infer_request.GetBlob("output");
+    // 获取 blob 数据指针
+    float* output_data = output_blob->buffer().as<InferenceEngine::PrecisionTrait<InferenceEngine::Precision::FP32>::value_type*>();
+    // 获取输出 blob 大小和维度信息（该值固定）
+    // auto output_size = output_blob->size();
+    this->output_dims = output_blob->getTensorDesc().getDims();
+    // 返回指针
+    return output_data;
 }
 
 
 
 
-void Yolov5Manager::Comsume_res(){
+
+cv::Point Yolov5Manager::get_res_ans(float* item_infer_res){
 
     // 获取检测到的框数量
     int num_detections = output_dims[1];
@@ -156,8 +116,8 @@ void Yolov5Manager::Comsume_res(){
     // 处理输出结果
     // 遍历检测到的框
     int sum = 0;
-    int dims = output_dims[2]; // weidu
-    int num_of_classes = dims - 15; // get num of classes
+    int dims = output_dims[2]; // 维度
+    int num_of_classes = dims - 15; // 获得类别的数量
 
     std::vector<DetectRect> rects;
     std::vector<DetectRect> final_rects;
@@ -235,10 +195,9 @@ void Yolov5Manager::Comsume_res(){
             }
             if(flag){
                 res_rects.push_back(rects[i]);
-            }
+            } 
         }
     }
-
     #ifdef DEBUG
     this->draw_res(src_);
     cout << "num: " << sum << endl;
@@ -248,7 +207,100 @@ void Yolov5Manager::Comsume_res(){
 }
 
 
-
+// 初始化代码
+void Yolov5Manager::InitYolov5Manager(std::string &model_path, std::string &device_name, int input_weight = 640, int input_height = 640){
+    // 加载模型
+    if(model_path[model_path.length() - 1] == '/')
+        this->executable_network = this->loader->loadNetwork(model_path + "best.xml", model_path + "best.bin", device_name, input_weight, input_height);
+    else
+        this->executable_network = this->loader->loadNetwork(model_path + "/best.xml", model_path + "/best.bin", device_name, input_weight, input_height);
+    // 初始化参数，后期改为xml读取
+    this->m_input_height = 640; // 模型需要的图片大小
+    this->m_input_width = 640; 
+    this->max_buffer = 1000; // 最大的buffer队列大小
+}
+/**
+ * @name get_inference_request_from_external_source
+ * @details 这里可能调用摄像头的封装类，本函数只有Product函数中调用了
+ * @author 可莉不知道哦
+ * @brief 摄像头相关。
+*/
+cv::Mat Yolov5Manager::get_inference_request_from_external_source() {
+    cv::Mat src;
+    if (cap.read(src)) {
+        return src;
+    } else {
+        // 处理读取失败的情况
+        return cv::Mat();
+    }
+}
+/**
+ * @name Product
+ * @details 生产者线程，生产出来的推理请求存到buffer数组中，外部调用，名字得改
+ * @author 可莉不知道哦
+ * @brief 输入Mat       ===>     获得的推理请求
+*/
+void Yolov5Manager::Product(){
+    while(1){
+        // 从外部获取推理请求
+        cv::Mat src_ = get_inference_request_from_external_source();
+        // 如果buffer中东西过多，也需要锁住不处理了
+        std::unique_lock<std::mutex> lock(mtx);
+        condition.wait(lock, []{ return is_space_buffer.size() > 1e4; });
+        // 调用多线程x`主要函数
+        this->infer_request_buffer.push(this->get_infer_request(src_));
+    }
+}
+/**
+ * @name Consume
+ * @return void（只是将结果存到队列中）
+ * @details 消费者线程，将消费buffer数组中的推理请求类，将推理请求的类push到类中的infer_request_buffer中
+ * @author 可莉不知道哦
+ * @brief 获取的推理请求    ===>     得到原始结果
+*/
+void Yolov5Manager::Consume(){
+    while(1){
+        // 如果queue中没东西，不能进行下一步
+        std::unique_lock<std::mutex> lock(mtx);
+        condition.wait(lock, []{ return !infer_request_buffer.empty(); });
+        // 再次确保一下size
+        if(infer_request_buffer.size()){
+            // 将infer取出来推理
+            auto item = infer_request_buffer.front();
+            infer_request_buffer.pop();
+            // 推理到结果，并且存到队列中
+            // 如果这里过大，需不需要锁住？
+            this->output_data_buffer.push(this->get_infer_res());
+        }
+    }
+}
+/**
+ * @name Consume_res
+ * @details 第二级消费者线程
+ * @author 可莉不知道哦
+ * @brief 得到原始结果     ===>     最终结果
+*/
+void Yolov5Manager::Consume_res(){
+    while(1){
+        // 如果queue中没东西，不能进行下一步
+        std::unique_lock<std::mutex> lock(mtx);
+        condition.wait(lock, []{ return !output_data_buffer.empty(); });
+        // 再次确保一下size
+        if(output_data_buffer.size()){
+            // 将data取出来进行后续处理
+            InferenceEngine::SizeVector item = output_data_buffer.front();
+            output_data_buffer.pop();
+            // 如果这里过大，需不需要锁住？
+            output_point.push(this->get_res_ans(item));
+        }
+    }
+}
+/**
+ * @name draw_res
+ * @details 画图函数
+ * @author 可莉不知道哦
+ * @brief 画图相关，如果将#define DEBUG解开，就会进入DEBUG模式，自动将代码添加进来实现画图
+*/
 void Yolov5Manager::draw_res(cv::Mat &src_){
     // iterate the res rect
     for(auto item_res_rect : res_rects){
@@ -268,26 +320,4 @@ void Yolov5Manager::draw_res(cv::Mat &src_){
         cv::line(src_, p02, p04, cv::Scalar(0, 255, 0));
         cv::line(src_, p03, p04, cv::Scalar(0, 255, 0));
     }
-}
-
-
-
-
-
-cv::Point Yolov5Manager::get_res_ans(float* item_infer_res){
-
-}
-
-
-// 初始化代码
-void Yolov5Manager::InitYolov5Manager(std::string &model_path, std::string &device_name, int input_weight = 640, int input_height = 640){
-    // 加载模型
-    if(model_path[model_path.length() - 1] == '/')
-        this->executable_network = this->loader->loadNetwork(model_path + "best.xml", model_path + "best.bin", device_name, input_weight, input_height);
-    else
-        this->executable_network = this->loader->loadNetwork(model_path + "/best.xml", model_path + "/best.bin", device_name, input_weight, input_height);
-    // 初始化参数，后期改为xml读取
-    this->m_input_height = 640; // 模型需要的图片大小
-    this->m_input_width = 640; 
-    this->max_buffer = 1000; // 最大的buffer队列大小
 }

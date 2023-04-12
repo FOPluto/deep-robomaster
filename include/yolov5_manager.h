@@ -33,13 +33,17 @@ class Yolov5Manager
 private:
     /* data */
     InferenceEngine::ExecutableNetwork executable_network;           // 可以使用的神经网络
-    queue<InferenceEngine::InferRequest> infer_request_buffer;       // 推理请求队列
-    queue<float *> output_data_buffer;                               // 推理完成之后的原始数据
+    std::queue<InferenceEngine::InferRequest> infer_request_buffer;  // 推理请求队列
+    std::queue<InferenceEngine::SizeVector> output_data_buffer;      // 推理完成之后的原始数据
+    std::queue<cv::Point> output_point;                              // 最终得到需要打击的目标
+
+    cv::VideoCapture capture                                         // 摄像头相关
+
     int max_buffer;                                                  // 最大的buffer索引值，当buffer数组过大就锁住
 
-    Yolov5Detector* detector;                                        // 推理器相关
+    Yolov5Detector* detector;                                        // 推理器相关(未启用)
 
-    Yolov5Loader* loader;                                            // 加载器相关
+    Yolov5Loader* loader;                                            // 加载器相关(未启用)
 
 	std::mutex mtx;                                                  // 进程锁
 	std::condition_variable condition;                               // 好像是条件对象
@@ -60,11 +64,11 @@ public:
 private:
     /*          线程函数            */
     //    输入Mat       ===>     获得的推理请求
-    void Product(cv::Mat& src_);
+    void Product();
     // 获取的推理请求    ===>     得到原始结果
     void Consume();
     //  得到原始结果     ===>     最终结果
-    void Comsume_res();
+    void Consume_res();
     /*          内部函数           */
     // 初始化Yolov5Manager类，初始化一些参数
     void InitYolov5Manager(std::string &model_path, std::string &device_name, int input_weight, int input_height);
@@ -72,12 +76,15 @@ private:
     void get_infer_request(cv::Mat& src_);
     // 获得推理结果函数
     float* get_infer_res(InferenceEngine::InferRequest& item_infer);
+    // 计算最终结果function
     // 获得最终结果函数（该函数需要根据调用进行修改返回值）
     cv::Point get_res_ans(float* item_infer_res);
     // 清理上一次工作（暂时没有用上，未实现）
     void clear_works();
     // 作图调试（如果DEBUG关了就没用）
     void draw_res(cv::Mat &src_);
+    // 读入摄像头图像Mat
+    cv::Mat get_inference_request_from_external_source();
 };
 
 #endif
