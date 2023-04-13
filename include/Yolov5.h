@@ -11,7 +11,7 @@
 #include <vector>
 #include <chrono>
 
-// #define DEBUG
+#define DEBUG
 
 using namespace std;
 using namespace cv;
@@ -53,6 +53,8 @@ class Yolov5{
 
 	float scale_x;
 	float scale_y;
+
+	float max_scale;                                             // 图像resize的大小
 
 	float threshold;
 

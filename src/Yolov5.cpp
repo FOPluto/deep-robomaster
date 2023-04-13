@@ -101,7 +101,7 @@ void Yolov5::read_network(){
     //配置input_tensor输入：U8,NCHW, 保持默认的禁止自动放缩输入图像和禁止自动转换颜色通道
     image_info_ptr->setPrecision(InferenceEngine::Precision::FP32); 
     image_info_ptr->setLayout(InferenceEngine::Layout::NCHW);
-    image_info_ptr->getPreProcess().setColorFormat(InferenceEngine::ColorFormat::BGR);
+    image_info_ptr->getPreProcess().setColorFormat(InferenceEngine::ColorFormat::RGB);
 	image_info_ptr->getPreProcess().setResizeAlgorithm(RESIZE_BILINEAR);
     //获取输出并进行设置(第二种方式)
 	for (auto &output : m_output_info){
@@ -145,24 +145,26 @@ void Yolov5::infer2res(cv::Mat& src_){
 
 	scale_x = (float)src_.cols / m_input_width;
 	scale_y = (float)src_.rows / m_input_height;
-
+    // 如果太大
     if(scale_x > 1 || scale_y > 1){
-        float max_scale = std::max(scale_x, scale_y);
+        max_scale = std::max(scale_x, scale_y);
         int res_width = src_.cols / max_scale;
         int res_height = src_.rows / max_scale;
         cv::resize(src_, src_, cv::Size(res_width, res_height));
     }
-    
-	scale_x = (float)src_.cols / m_input_width;
-	scale_y = (float)src_.rows / m_input_height;
+    // 如果是小了
+    if(src_.cols != m_input_width || src_.rows != m_input_height) {
+        scale_x = (float)src_.cols / m_input_width;
+        scale_y = (float)src_.rows / m_input_height;
 
-    if(scale_x < 1 && scale_y < 1){
-        if(scale_x > scale_y){
-            float max_scale = scale_x;
-            cv::resize(src_, src_, cv::Size(src_.cols / max_scale, src_.rows / max_scale));
-        } else {
-            float max_scale = scale_y;
-            cv::resize(src_, src_, cv::Size(src_.cols / max_scale, src_.rows / max_scale));
+        if(scale_x < 1 && scale_y < 1){
+            if(scale_x > scale_y){
+                max_scale = scale_x;
+                cv::resize(src_, src_, cv::Size(src_.cols / max_scale, src_.rows / max_scale));
+            } else {
+                max_scale = scale_y;
+                cv::resize(src_, src_, cv::Size(src_.cols / max_scale, src_.rows / max_scale));
+            }
         }
     }
     #ifdef RED_ENERMY 
@@ -175,8 +177,10 @@ void Yolov5::infer2res(cv::Mat& src_){
         cv::copyMakeBorder(src_, src_, 0, this->m_input_height - src_.rows, 0, 0, BORDER_CONSTANT, cv::Scalar(0, 0, 0));
     }
 
-    Mat input_blob = cv::dnn::blobFromImage(src_, 1 / 255.0, Size(640, 640), Scalar(0, 0, 0), true, false);
-
+    cv::Mat pre;
+    cv::Mat pre_split[3];
+    src_.convertTo(pre,CV_32F);
+    cv::split(pre,pre_split);
     // 创建推理请求
     InferenceEngine::InferRequest infer_request = m_executable_network.CreateInferRequest();
 
@@ -189,16 +193,22 @@ void Yolov5::infer2res(cv::Mat& src_){
     auto data = blobMapped.as<float*>();
 
     size_t img_size = src_.cols * src_.rows;
-
-    for(size_t row = 0;row < original_height;row ++){
-        for(size_t col = 0;col < original_width;col ++){
-            for(size_t ch = 0;ch < 3;ch ++){
-                data[img_size * ch + row * original_width + col] = float(src_.at<Vec3b>(row,col)[ch]) / 255.0f;
-            }
-        }
+    // 参照沈航的使用指针copy，可以稍微快点
+    for(int c = 0;c < 3;c++){
+        memcpy(data, pre_split[c].data, original_width * original_height * sizeof(float));
+        data += img_size;
     }
 
+    
+
+    // 推理
     infer_request.Infer();
+
+
+
+    
+
+
 
     #ifdef DEBUG
 
@@ -228,44 +238,58 @@ void Yolov5::infer2res(cv::Mat& src_){
     // 遍历检测到的框
     int sum = 0;
     int dims = output_dims[2]; // weidu
-    int num_of_classes = dims - 15; // get num of classes
+    int num_of_classes = dims - 8; // get num of classes
 
     std::vector<DetectRect> rects;
 
     std::vector<DetectRect> final_rects;
 
+
     for (int i = 0; i < num_detections; ++i) {
-        // 获取框的属性
-        float confidence = output_data[i * dims + 4];
+        // 获得当前的grid, xy方向上的偏移数量
+        int grid, x_num, y_num;
+        if(i < 2704){
+            grid = 8;
+            x_num = i % 52;
+            y_num = i / 52;
+        } else if(i < 3380) {
+            grid = 16;
+            x_num = i % 26;
+            y_num = i / 26;
+        } else {
+            grid = 32;
+            x_num = i % 13;
+            y_num = i / 13;
+        }
+        // 获取框的置信度
+        int basic_pos = i * dims;
+        float confidence = output_data[basic_pos + 8];
         if(confidence > 0.40) {
             DetectRect temp_rect;
-            for(int j = 0;j < 5;j ++){
-                cv::Point temp_p = cv::Point(output_data[5 + i * dims + j * 2], output_data[6 + i * dims + j * 2]);
-                temp_rect.points.push_back(temp_p);
-            }
-            // classes
-            for(int j = 0;j < num_of_classes;j++){
-                std::pair<float, int> temp_item = {output_data[15 + j + i * dims], j};
-                temp_rect.classes.push_back(temp_item);
-            }
-            // sort get max
-            std::sort(temp_rect.classes.begin(), temp_rect.classes.end(), [](const std::pair<float, int>& a, const std::pair<float, int>& b){
-                return a.first > b.first;
-            });
-            temp_rect.class_id = temp_rect.classes[0].second;
-            temp_rect.class_p = temp_rect.classes[0].first * confidence;
-            
-            if(temp_rect.class_p < 0.62) continue;
+            float x_1 = (output_data[basic_pos + 0] + grid * x_num) * max_scale;
+            float y_1 = (output_data[basic_pos + 1] + grid * y_num) * max_scale;
+            float x_2 = (output_data[basic_pos + 2] + grid * x_num) * max_scale;
+            float y_2 = (output_data[basic_pos + 3] + grid * y_num) * max_scale;
+            float x_3 = (output_data[basic_pos + 4] + grid * x_num) * max_scale;
+            float y_3 = (output_data[basic_pos + 5] + grid * y_num) * max_scale;
+            float x_4 = (output_data[basic_pos + 6] + grid * x_num) * max_scale;
+            float y_4 = (output_data[basic_pos + 7] + grid * y_num) * max_scale;
 
-            // x, y, w, h, cof, cls
-            cv::Point point = cv::Point(output_data[i * dims], output_data[i * dims + 1]);
-            temp_rect.cen_p = point;
+            // 获得最大概率的类别和颜色，取值 8 or 9
+            int box_color = -1;
+            for(int j = 8;j <= 9;j++){
+                if(box_color  == -1 || output_data[box_color + basic_pos] < output_data[j + basic_pos]) box_color = j - basic_pos;
+            }
+            // 类别
+            int box_class = -1;
+            for(int j = 10;j < 21;j++){
+                if(box_class  == -1 || output_data[box_class + basic_pos] < output_data[j + basic_pos]) box_class = j;
+            }
+            float class_p = output_data[box_class + basic_pos];
 
-            int rect_width = output_data[i *dims + 2];
-            int rect_height = output_data[i * dims + 3];
-            temp_rect.min_point = cv::Point(temp_rect.cen_p.x - rect_width / 2, temp_rect.cen_p.y - rect_height / 2);
-            temp_rect.min_point = cv::Point(temp_rect.cen_p.x + rect_width / 2, temp_rect.cen_p.y + rect_height / 2);
-            temp_rect.rect = cv::Rect(temp_rect.min_point, temp_rect.max_point);
+            if(class_p < 0.3) continue;
+
+            temp_rect
 
             #ifdef DEBUG
             cout << "confidence: " << confidence << endl;
@@ -301,7 +325,7 @@ void Yolov5::infer2res(cv::Mat& src_){
                 int or_space = max_p_rect.area() + item_p_rect.area() - intersectionArea;
 
                 float IOU_with_the_max = (float)intersectionArea / or_space;
-
+                // 如果IOU过大就将其舍去
                 if(IOU_with_the_max >= 0.90) {
                     flag = false;
                     break;
@@ -315,7 +339,7 @@ void Yolov5::infer2res(cv::Mat& src_){
 
     #ifdef DEBUG
     this->draw_res(src_);
-    cout << "num: " << sum << endl;
+    std::cout << "num: " << sum << std::endl;
     cv::imshow("src_image", src_);
     cv::waitKey(1);
     #endif
@@ -347,10 +371,10 @@ void Yolov5::draw_res(cv::Mat &src_){
 
 void Yolov5::detect_yolov5(cv::Mat src_){
     this->m_src_image = src_;
-    // this->m_src_image.copyTo(m_src_copy_image);
-    // this->infer2res(m_src_copy_image);
+    this->m_src_image.copyTo(m_src_copy_image);
+    this->infer2res(m_src_copy_image);
     // 优化改成
-    this->infer2res(m_src_image);
+    //this->infer2res(m_src_image);
 }
 
 

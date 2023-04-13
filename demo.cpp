@@ -6,14 +6,18 @@
 
 int main(){
 
-    cv::VideoCapture video_capture("/home/robomaster/deep-robomaster/test_001.avi");
+    cv::VideoCapture video_capture("/home/robomaster/deep-robomaster/test_001.mp4");
+    cv::Mat src_image = cv::imread("/home/robomaster/deep-robomaster/demo.png");
 
     cv::Mat frame;
 
     Yolov5* demo_yolov5_detector = new Yolov5("/home/robomaster/deep-robomaster/best/model/opt-0527-001.xml", "/home/robomaster/deep-robomaster/best/model/opt-0527-001.bin", 416, 416);
 
-    // init
+    // 使用GPU进行初始化的话会出现
     demo_yolov5_detector->init_yolov5_detector();
+
+    demo_yolov5_detector->detect_yolov5(src_image);
+    demo_yolov5_detector->show_res();
     
     while(video_capture.read(frame)){
         // 获取开始时间戳
