@@ -18,7 +18,8 @@ int main(){
 
     demo_yolov5_detector->detect_yolov5(src_image);
     demo_yolov5_detector->show_res();
-    
+    cv::imshow("dst", src_image);
+    cv::waitKey(0);
     while(video_capture.read(frame)){
         // 获取开始时间戳
         auto start = std::chrono::system_clock::now();

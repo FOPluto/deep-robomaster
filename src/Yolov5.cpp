@@ -200,14 +200,8 @@ void Yolov5::infer2res(cv::Mat& src_){
     }
 
     
-
     // 推理
     infer_request.Infer();
-
-
-
-    
-
 
 
     #ifdef DEBUG
@@ -244,7 +238,6 @@ void Yolov5::infer2res(cv::Mat& src_){
 
     std::vector<DetectRect> final_rects;
 
-
     for (int i = 0; i < num_detections; ++i) {
         // 获得当前的grid, xy方向上的偏移数量
         int grid, x_num, y_num;
@@ -266,33 +259,39 @@ void Yolov5::infer2res(cv::Mat& src_){
         float confidence = output_data[basic_pos + 8];
         if(confidence > 0.40) {
             DetectRect temp_rect;
-            float x_1 = (output_data[basic_pos + 0] + grid * x_num) * max_scale;
-            float y_1 = (output_data[basic_pos + 1] + grid * y_num) * max_scale;
-            float x_2 = (output_data[basic_pos + 2] + grid * x_num) * max_scale;
-            float y_2 = (output_data[basic_pos + 3] + grid * y_num) * max_scale;
-            float x_3 = (output_data[basic_pos + 4] + grid * x_num) * max_scale;
-            float y_3 = (output_data[basic_pos + 5] + grid * y_num) * max_scale;
-            float x_4 = (output_data[basic_pos + 6] + grid * x_num) * max_scale;
-            float y_4 = (output_data[basic_pos + 7] + grid * y_num) * max_scale;
+            float x_1 = (output_data[basic_pos + 0] + x_num) * max_scale * grid;
+            float y_1 = (output_data[basic_pos + 1] + y_num) * max_scale * grid;
+            float x_2 = (output_data[basic_pos + 2] + x_num) * max_scale * grid;
+            float y_2 = (output_data[basic_pos + 3] + y_num) * max_scale * grid;
+            float x_3 = (output_data[basic_pos + 4] + x_num) * max_scale * grid;
+            float y_3 = (output_data[basic_pos + 5] + y_num) * max_scale * grid;
+            float x_4 = (output_data[basic_pos + 6] + x_num) * max_scale * grid;
+            float y_4 = (output_data[basic_pos + 7] + y_num) * max_scale * grid;
 
             // 获得最大概率的类别和颜色，取值 8 or 9
             int box_color = -1;
             for(int j = 8;j <= 9;j++){
                 if(box_color  == -1 || output_data[box_color + basic_pos] < output_data[j + basic_pos]) box_color = j - basic_pos;
             }
-            // 类别
+            // 类别索引
             int box_class = -1;
             for(int j = 10;j < 21;j++){
                 if(box_class  == -1 || output_data[box_class + basic_pos] < output_data[j + basic_pos]) box_class = j;
             }
+            // 类别置信度
             float class_p = output_data[box_class + basic_pos];
-
+            // 如果最大的类别置信度过低，就舍去
             if(class_p < 0.3) continue;
 
-            temp_rect
+            cv::circle(this->m_src_image, cv::Point(x_1, y_1), 3, cv::Scalar(0, 255, 0), 2);
+            cv::circle(this->m_src_image, cv::Point(x_2, y_2), 3, cv::Scalar(0, 255, 0), 2);
+            cv::circle(this->m_src_image, cv::Point(x_3, y_3), 3, cv::Scalar(0, 255, 0), 2);
+            cv::circle(this->m_src_image, cv::Point(x_4, y_4), 3, cv::Scalar(0, 255, 0), 2);
 
             #ifdef DEBUG
-            cout << "confidence: " << confidence << endl;
+            cv::imshow("temp", m_src_image);
+            cv::waitKey(0);
+            std::cout << "confidence: " << confidence << std::endl;
             // circle(src_, temp_rect.cen_p, 4, cv::Scalar(255, 0, 0), 4);
             sum ++;
             #endif
@@ -302,6 +301,7 @@ void Yolov5::infer2res(cv::Mat& src_){
         }
         // ...
     }
+    return;
     // sort
     if(rects.size()){
         std::sort(rects.begin(), rects.end(), [](const DetectRect& d1, const DetectRect& d2){
