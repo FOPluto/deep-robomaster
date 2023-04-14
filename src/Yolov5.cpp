@@ -72,7 +72,9 @@ void Yolov5::init_yolov5_detector(){
     printf("--------------start read network--------------\n");
     this->read_network();
     this->threshold = 0.6;
+    this->color_num = 2;
     this->class_num = 36;
+    
     printf("---------------------done---------------------\n");
 }
 
@@ -134,8 +136,11 @@ void Yolov5::clear_work(){
 void image_pre_processing(cv::Mat& src_){
 
 }
-
-vector<DetectRect>& Yolov5::infer2res(cv::Mat& src_){
+/**
+ * @brief 主要模型推理的函数
+ * @author 可莉不知道哦
+*/
+void Yolov5::infer2res(cv::Mat& src_){
     #ifdef DEBUG
     // 获取开始时间戳
     auto start = std::chrono::system_clock::now();
@@ -280,6 +285,7 @@ vector<DetectRect>& Yolov5::infer2res(cv::Mat& src_){
             }
             // 类别置信度
             float class_p = output_data[box_class + basic_pos];
+            float color_p = output_data[box_color + basic_pos];
             // 如果最大的类别置信度过低，就舍去
             if(class_p < 0.3) continue;
 
@@ -288,24 +294,43 @@ vector<DetectRect>& Yolov5::infer2res(cv::Mat& src_){
             cv::circle(this->m_src_image, cv::Point(x_2, y_2), 3, cv::Scalar(0, 255, 0), 2);
             cv::circle(this->m_src_image, cv::Point(x_3, y_3), 3, cv::Scalar(0, 255, 0), 2);
             cv::circle(this->m_src_image, cv::Point(x_4, y_4), 3, cv::Scalar(0, 255, 0), 2);
-
+            #endif // DEBUG item point 测试角点是否正确检测
+            // 获取最大矩形框，垂直的
+            int max_x = std::max(x_1, std::max(x_2, std::max(x_3, x_4)));
+            int max_y = std::max(y_1, std::max(y_2, std::max(y_3, y_4)));
+            int min_x = std::min(x_1, std::min(x_2, std::min(x_3, x_4)));
+            int min_y = std::min(y_1, std::min(y_2, std::min(y_3, y_4)));
+            // 将计算得到的结果保存到容器元素中
+            temp_rect.min_point = cv::Point(min_x, min_y);
+            temp_rect.max_point = cv::Point(max_x, max_y);
+            temp_rect.rect = cv::Rect(temp_rect.min_point, temp_rect.max_point);
+            temp_rect.points.push_back(cv::Point(x_1, y_1));
+            temp_rect.points.push_back(cv::Point(x_2, y_2));
+            temp_rect.points.push_back(cv::Point(x_3, y_3));
+            temp_rect.points.push_back(cv::Point(x_4, y_4));
+            temp_rect.cen_p = cv::Point(x_1 + x_2 + x_3 + x_4 >> 2, y_1 + y_2 + y_3 + y_4 >> 2);
+            temp_rect.class_id = box_class;
+            temp_rect.class_p = class_p;
+            temp_rect.color_id = box_color;
+            temp_rect.color_p = color_p;
+            #ifdef DEBUG
             cv::imshow("temp", m_src_image);
-            cv::waitKey(0);
+            cv::waitKey(1);
             std::cout << "confidence: " << confidence << std::endl;
             // circle(src_, temp_rect.cen_p, 4, cv::Scalar(255, 0, 0), 4);
             sum ++;
-            #endif 
+            #endif // DEBUG 调试此时的src_image，查看角点的情况
 
             // add to rects
             rects.push_back(temp_rect);
         }
         // ...
     }
-    return;
     // sort
     if(rects.size()){
         std::sort(rects.begin(), rects.end(), [](const DetectRect& d1, const DetectRect& d2){
             if(d1.class_p != d2.class_p) return d1.class_p > d2.class_p;
+            return d1.class_p * d1.color_p > d2.class_p * d2.color_p;
         });
         // IOU
         res_rects.push_back(rects[0]); // push the best to the res_vector
@@ -342,9 +367,10 @@ vector<DetectRect>& Yolov5::infer2res(cv::Mat& src_){
     std::cout << "num: " << sum << std::endl;
     cv::imshow("src_image", src_);
     cv::waitKey(1);
-    #endif
+    #endif // DEBUG 调试最终得到的点
 
-    return res_rects;
+
+
 }
 
 void Yolov5::draw_res(cv::Mat &src_){
@@ -355,7 +381,6 @@ void Yolov5::draw_res(cv::Mat &src_){
         cv::Point p03 = item_res_rect.points[2]; // you xia
         cv::Point p04 = item_res_rect.points[3]; // you shang
 
-        #ifdef DEBUG
         cv::circle(src_, p01, 2, cv::Scalar(0, 0, 255), 2);
         cv::circle(src_, p02, 2, cv::Scalar(0, 0, 255), 2);
         cv::circle(src_, p03, 2, cv::Scalar(0, 0, 255), 2);
@@ -366,7 +391,6 @@ void Yolov5::draw_res(cv::Mat &src_){
         cv::line(src_, p02, p03, cv::Scalar(0, 255, 0));
         cv::line(src_, p02, p04, cv::Scalar(0, 255, 0));
         cv::line(src_, p03, p04, cv::Scalar(0, 255, 0));
-        #endif        
     }
 }
 

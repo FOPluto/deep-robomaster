@@ -1,5 +1,24 @@
 /**
  * @anchor FoPluto
+ * @brief 模型结构：Yolox，参考沈航的模型，之后自己打算改一个face模型，
+ * 		输入信息[1, 3, 416, 416]，代码内部自动resize，并且映射到原始图像，
+ * 		输出信息[1, 3549, 21]，3549个锚框。
+ * 		锚框分为三种：grid = {8, 16, 32}，分别对于框的大小，
+ * 		每个框有21个参数：
+ * 			0~7：装甲板四个点位置； 8：物体置信度； 9：颜色置信度； 10-20:11个类别
+ * 		类别分布：
+ * 			idx            name
+ * 			10：           class_1
+ * 			11：           class_2
+ * 			12：		   class_3
+ * 			13：           class_4
+ * 			14： 
+ * 			15：
+ * 			16：
+ * 			17：
+ * 			18：
+ * 			19：
+ * 			20：
 */
 
 #include <opencv2/opencv.hpp>
@@ -11,7 +30,7 @@
 #include <vector>
 #include <chrono>
 
-#define DEBUG
+#define DEBUG // 调试模式
 
 using namespace std;
 using namespace cv;
@@ -28,10 +47,11 @@ struct DetectRect{
 	cv::Point max_point;
 	cv::Rect rect;
 	std::vector<cv::Point> points;
-	std::vector<std::pair<float, int>> classes;
 	cv::Point cen_p;
 	int class_id;
-	double class_p;
+	float class_p;
+	int color_id;
+	float color_p;
 };
 
 class Yolov5{
@@ -40,28 +60,28 @@ class Yolov5{
 	cv::Mat m_src_image;
 	cv::Mat m_src_copy_image;
 	cv::Mat blob_image;
-	int m_input_height;
-	int m_input_width;
-	std::string image_info_name;
-	std::string m_xml_path;                                      // xml path
-	std::string m_bin_path;                                      // bin path
+	int m_input_height;                                          // 模型要求输入的高度，一般是[640, 640]咱们的模型为[416, 416]
+	int m_input_width;                                           // 模型要求输入的宽度
+	std::string image_info_name;                                 // 图片输入模型的id
+	std::string m_xml_path;                                      // 模型xml文件的路径
+	std::string m_bin_path;                                      // 模型bin文件的路径
 	
 	InferenceEngine::Core m_ie;
-	InferenceEngine::InputsDataMap m_input_info;                 // input information
-	InferenceEngine::OutputsDataMap m_output_info;               // output information
-	InferenceEngine::ExecutableNetwork m_executable_network;     // trained model
+	InferenceEngine::InputsDataMap m_input_info;                 // 输入信息
+	InferenceEngine::OutputsDataMap m_output_info;               // 输出信息
+	InferenceEngine::ExecutableNetwork m_executable_network;     // 训练好了的模型
 
-	float scale_x;
-	float scale_y;
+	float scale_x;                                               // x方向上resize的尺度
+	float scale_y;                                               // y方向上resize的尺度
+	float max_scale;                                             // 图像resize的尺度，用来映射到原来图像
+	float threshold;                                             // 置信度阈值标准
 
-	float max_scale;                                             // 图像resize的大小
+	int class_num;                                               // 模型输出的类别数量
+	int color_num;
 
-	float threshold;
-
-	int class_num;
-
-	vector<DetectRect> res_rects;
+	std::vector<DetectRect> res_rects;                           // 结果Rect的存储容器
 	
+	std::string * class_idx_map;                      // 类别名称对应的索引值
 	public:
 
 	Yolov5();                           // 
