@@ -6,7 +6,7 @@
 
 int main(){
 
-    cv::VideoCapture video_capture("/home/robomaster/deep-robomaster/test_001.mp4");
+    cv::VideoCapture video_capture(0);
     cv::Mat src_image = cv::imread("/home/robomaster/deep-robomaster/demo.png");
 
     cv::Mat frame;
@@ -16,18 +16,23 @@ int main(){
     // 使用GPU进行初始化的话会出现
     demo_yolov5_detector->init_yolov5_detector();
 
+    // 获取开始时间戳
+    auto start = std::chrono::system_clock::now();
     demo_yolov5_detector->detect_yolov5(src_image);
+    // 获取结束时间戳
+    auto end = std::chrono::system_clock::now();
+    // 计算时间差
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "所有时间开销: " << duration.count() << "ms" << std::endl;
+
     cv::imshow("dst", src_image);
     cv::waitKey(0);
     while(video_capture.read(frame)){
         // 获取开始时间戳
         auto start = std::chrono::system_clock::now();
-
         demo_yolov5_detector->detect_yolov5(frame);
-
         // 获取结束时间戳
         auto end = std::chrono::system_clock::now();
-
         // 计算时间差
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         std::cout << "all Time elapsed: " << duration.count() << "ms" << std::endl;

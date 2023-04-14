@@ -140,7 +140,7 @@ void image_pre_processing(cv::Mat& src_){
  * @brief 主要模型推理的函数
  * @author 可莉不知道哦
 */
-void Yolov5::infer2res(cv::Mat& src_){
+vector<DetectRect>& Yolov5::infer2res(cv::Mat& src_){
     #ifdef DEBUG
     // 获取开始时间戳
     auto start = std::chrono::system_clock::now();
@@ -204,10 +204,8 @@ void Yolov5::infer2res(cv::Mat& src_){
         data += img_size;
     }
 
-    
     // 推理
     infer_request.Infer();
-
 
     #ifdef DEBUG
 
@@ -260,9 +258,10 @@ void Yolov5::infer2res(cv::Mat& src_){
             y_num = i / 13;
         }
         // 获取框的置信度
+        float demo[dims];
         int basic_pos = i * dims;
         float confidence = output_data[basic_pos + 8];
-        if(confidence > 0.40) {
+        if(confidence > 0.55) {
             DetectRect temp_rect;
             float x_1 = (output_data[basic_pos + 0] + x_num) * max_scale * grid;
             float y_1 = (output_data[basic_pos + 1] + y_num) * max_scale * grid;
@@ -272,6 +271,8 @@ void Yolov5::infer2res(cv::Mat& src_){
             float y_3 = (output_data[basic_pos + 5] + y_num) * max_scale * grid;
             float x_4 = (output_data[basic_pos + 6] + x_num) * max_scale * grid;
             float y_4 = (output_data[basic_pos + 7] + y_num) * max_scale * grid;
+
+            for(int j = 0;j < 21;j++) demo[j] = output_data[basic_pos + j];
 
             // 获得最大概率的类别和颜色，取值 8 or 9
             int box_color = -1;
@@ -308,14 +309,12 @@ void Yolov5::infer2res(cv::Mat& src_){
             temp_rect.points.push_back(cv::Point(x_2, y_2));
             temp_rect.points.push_back(cv::Point(x_3, y_3));
             temp_rect.points.push_back(cv::Point(x_4, y_4));
-            temp_rect.cen_p = cv::Point(x_1 + x_2 + x_3 + x_4 >> 2, y_1 + y_2 + y_3 + y_4 >> 2);
+            temp_rect.cen_p = cv::Point((x_1 + x_2 + x_3 + x_4) / 4.0, (y_1 + y_2 + y_3 + y_4) / 4.0);
             temp_rect.class_id = box_class;
             temp_rect.class_p = class_p;
             temp_rect.color_id = box_color;
             temp_rect.color_p = color_p;
             #ifdef DEBUG
-            cv::imshow("temp", m_src_image);
-            cv::waitKey(1);
             std::cout << "confidence: " << confidence << std::endl;
             // circle(src_, temp_rect.cen_p, 4, cv::Scalar(255, 0, 0), 4);
             sum ++;
@@ -365,8 +364,8 @@ void Yolov5::infer2res(cv::Mat& src_){
     #ifdef DEBUG
     this->draw_res(src_);
     std::cout << "num: " << sum << std::endl;
-    cv::imshow("src_image", src_);
-    cv::waitKey(1);
+    cv::imshow("dst_image", m_src_image);
+    cv::waitKey(0);
     #endif // DEBUG 调试最终得到的点
 
 
@@ -381,16 +380,16 @@ void Yolov5::draw_res(cv::Mat &src_){
         cv::Point p03 = item_res_rect.points[2]; // you xia
         cv::Point p04 = item_res_rect.points[3]; // you shang
 
-        cv::circle(src_, p01, 2, cv::Scalar(0, 0, 255), 2);
-        cv::circle(src_, p02, 2, cv::Scalar(0, 0, 255), 2);
-        cv::circle(src_, p03, 2, cv::Scalar(0, 0, 255), 2);
-        cv::circle(src_, p04, 2, cv::Scalar(0, 0, 255), 2);
-        cv::line(src_, p01, p02, cv::Scalar(0, 255, 0));
-        cv::line(src_, p01, p03, cv::Scalar(0, 255, 0));
-        cv::line(src_, p01, p04, cv::Scalar(0, 255, 0));
-        cv::line(src_, p02, p03, cv::Scalar(0, 255, 0));
-        cv::line(src_, p02, p04, cv::Scalar(0, 255, 0));
-        cv::line(src_, p03, p04, cv::Scalar(0, 255, 0));
+        cv::circle(m_src_image, p01, 2, cv::Scalar(0, 0, 255), 2);
+        cv::circle(m_src_image, p02, 2, cv::Scalar(0, 0, 255), 2);
+        cv::circle(m_src_image, p03, 2, cv::Scalar(0, 0, 255), 2);
+        cv::circle(m_src_image, p04, 2, cv::Scalar(0, 0, 255), 2);
+        cv::line(m_src_image, p01, p02, cv::Scalar(0, 255, 0));
+        cv::line(m_src_image, p01, p03, cv::Scalar(0, 255, 0));
+        cv::line(m_src_image, p01, p04, cv::Scalar(0, 255, 0));
+        cv::line(m_src_image, p02, p03, cv::Scalar(0, 255, 0));
+        cv::line(m_src_image, p02, p04, cv::Scalar(0, 255, 0));
+        cv::line(m_src_image, p03, p04, cv::Scalar(0, 255, 0));
     }
 }
 
