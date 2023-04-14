@@ -75,7 +75,7 @@ class Yolov5{
 
 	private:
 
-	void infer2res(cv::Mat& src_);      // Mat yuchuli
+	vector<DetectRect>& infer2res(cv::Mat& src_);      // Mat yuchuli
 
 	void image_pre_processing(cv::Mat& src_);
 

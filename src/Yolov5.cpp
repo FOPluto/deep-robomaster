@@ -135,7 +135,7 @@ void image_pre_processing(cv::Mat& src_){
 
 }
 
-void Yolov5::infer2res(cv::Mat& src_){
+vector<DetectRect>& Yolov5::infer2res(cv::Mat& src_){
     #ifdef DEBUG
     // 获取开始时间戳
     auto start = std::chrono::system_clock::now();
@@ -211,7 +211,7 @@ void Yolov5::infer2res(cv::Mat& src_){
 
     // 计算时间差
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "Infer Time elapsed: " << duration.count() << "ms" << std::endl;
+    std::cout << "推理时间花费: " << duration.count() << "ms" << std::endl;
 
     #endif // DEBUG
 
@@ -283,18 +283,18 @@ void Yolov5::infer2res(cv::Mat& src_){
             // 如果最大的类别置信度过低，就舍去
             if(class_p < 0.3) continue;
 
+            #ifdef DEBUG
             cv::circle(this->m_src_image, cv::Point(x_1, y_1), 3, cv::Scalar(0, 255, 0), 2);
             cv::circle(this->m_src_image, cv::Point(x_2, y_2), 3, cv::Scalar(0, 255, 0), 2);
             cv::circle(this->m_src_image, cv::Point(x_3, y_3), 3, cv::Scalar(0, 255, 0), 2);
             cv::circle(this->m_src_image, cv::Point(x_4, y_4), 3, cv::Scalar(0, 255, 0), 2);
 
-            #ifdef DEBUG
             cv::imshow("temp", m_src_image);
             cv::waitKey(0);
             std::cout << "confidence: " << confidence << std::endl;
             // circle(src_, temp_rect.cen_p, 4, cv::Scalar(255, 0, 0), 4);
             sum ++;
-            #endif
+            #endif 
 
             // add to rects
             rects.push_back(temp_rect);
@@ -343,6 +343,8 @@ void Yolov5::infer2res(cv::Mat& src_){
     cv::imshow("src_image", src_);
     cv::waitKey(1);
     #endif
+
+    return res_rects;
 }
 
 void Yolov5::draw_res(cv::Mat &src_){
@@ -379,5 +381,5 @@ void Yolov5::detect_yolov5(cv::Mat src_){
 
 
 void Yolov5::show_res(){
-    imshow(WINDOW_NAME, this->m_src_copy_image);
+    cv::imshow(WINDOW_NAME, this->m_src_copy_image);
 }
