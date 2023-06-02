@@ -37,7 +37,7 @@ export PATH="/opt/miniconda/bin:$PATH"
 
 
 ```shell
-sudo chown -R robomaster .conda # 
+sudo chown -R robomaster . conda # 
 conda create -n robomaster python=3.8
 pip install cython -i https://pypi.mirrors.ustc.edu.cn/simple/
 pip install -r /home/robomaster/openvino/src/bindings/python/wheel/requirements-dev.txt -i https://pypi.mirrors.ustc.edu.cn/simple/
